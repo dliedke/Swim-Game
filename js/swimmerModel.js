@@ -8,53 +8,139 @@
   var tmpM = new THREE.Matrix4();
 
   var skinTones = [0xf1c27d, 0xe0ac69, 0xc68642, 0x8d5524, 0xffdbac, 0xd9a066];
+  var lensColors = [0x1d3b6e, 0x3a1d5c, 0x0f3d3a, 0x5a3a0a, 0x222831];
 
   function capsule(r, len, mat, seg) {
-    var g = new THREE.CapsuleGeometry(r, len, 4, seg || 8);
+    var g = new THREE.CapsuleGeometry(r, len, 3, seg || 8);
     g.rotateX(Math.PI / 2); // eixo ao longo de Z
     return new THREE.Mesh(g, mat);
   }
 
+  // Sólido de revolução ao longo de +Z a partir de um perfil [[raio, z], ...] (z crescente).
+  // sx/sy achatam a seção; back=true espelha para -Z (braços).
+  function lathe(prof, mat, seg, sx, sy, back) {
+    var pts = [];
+    for (var i = 0; i < prof.length; i++) pts.push(new THREE.Vector2(prof[i][0], prof[i][1]));
+    var g = new THREE.LatheGeometry(pts, seg);
+    g.rotateX(Math.PI / 2);
+    if (back) g.rotateY(Math.PI);
+    g.scale(sx || 1, sy || 1, 1);
+    return new THREE.Mesh(g, mat);
+  }
+
+  function ellipsoid(r, seg, mat, sx, sy, sz) {
+    var m = new THREE.Mesh(new THREE.SphereGeometry(r, seg, Math.max(4, seg - 2)), mat);
+    m.scale.set(sx, sy, sz);
+    return m;
+  }
+
+  // perfis (raio, z) das partes do corpo
+  var P_TORSO = [[0, -0.125], [0.11, -0.12], [0.19, -0.085], [0.232, -0.03], [0.238, 0.04], [0.222, 0.12],
+    [0.196, 0.21], [0.17, 0.3], [0.152, 0.4], [0.146, 0.48], [0.12, 0.54], [0, 0.56]];
+  var P_SUIT = [[0, 0.43], [0.15, 0.435], [0.153, 0.48], [0.163, 0.57], [0.168, 0.66], [0.158, 0.75], [0.11, 0.8], [0, 0.81]];
+  var P_BAND = [[0.153, 0.43], [0.156, 0.435], [0.157, 0.47], [0.153, 0.475]];
+  var P_THIGH = [[0, -0.03], [0.07, -0.02], [0.088, 0.04], [0.089, 0.14], [0.079, 0.27], [0.063, 0.39], [0.052, 0.46], [0.03, 0.485], [0, 0.49]];
+  var P_SLEEVE = [[0, -0.04], [0.08, -0.03], [0.095, 0.02], [0.094, 0.14], [0.086, 0.26], [0.084, 0.29], [0, 0.291]];
+  var P_SHIN = [[0, -0.04], [0.048, -0.03], [0.055, 0.02], [0.062, 0.1], [0.056, 0.19], [0.042, 0.31], [0.032, 0.39], [0.026, 0.42], [0, 0.43]];
+  var P_FOOT = [[0, 0.37], [0.036, 0.385], [0.048, 0.45], [0.046, 0.53], [0.034, 0.6], [0.016, 0.63], [0, 0.635]];
+  var P_UPPER = [[0, -0.035], [0.042, -0.025], [0.057, 0.01], [0.061, 0.08], [0.058, 0.15], [0.05, 0.23], [0.044, 0.29], [0.03, 0.325], [0, 0.335]];
+  var P_FORE = [[0, -0.02], [0.036, -0.01], [0.047, 0.04], [0.048, 0.09], [0.04, 0.18], [0.031, 0.26], [0.024, 0.29], [0, 0.3]];
+
+  // Junta várias malhas do mesmo material (posicionadas no espaço do grupo) em uma só,
+  // para cada parte do corpo custar uma chamada de desenho por material.
+  function merge(meshes, mat) {
+    var pos = [], nor = [], idx = [], off = 0;
+    meshes.forEach(function (m) {
+      m.updateMatrix();
+      var g = m.geometry.applyMatrix4(m.matrix);
+      var p = g.attributes.position.array, n = g.attributes.normal.array, ix = g.index.array;
+      for (var i = 0; i < p.length; i++) { pos.push(p[i]); nor.push(n[i]); }
+      for (i = 0; i < ix.length; i++) idx.push(ix[i] + off);
+      off += p.length / 3;
+      g.dispose();
+    });
+    var out = new THREE.BufferGeometry();
+    out.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    out.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+    out.setIndex(idx);
+    return new THREE.Mesh(out, mat);
+  }
+
+  function at(m, x, y, z) { m.position.set(x, y, z); return m; }
+
   function SwimmerModel(opts) {
     opts = opts || {};
     var lowPoly = opts.lowPoly;
-    var skin = new THREE.MeshLambertMaterial({ color: opts.skin != null ? opts.skin : skinTones[Math.floor(Math.random() * skinTones.length)] });
-    var cap = new THREE.MeshLambertMaterial({ color: opts.cap != null ? opts.cap : 0xffffff });
-    var suit = new THREE.MeshLambertMaterial({ color: opts.suit != null ? opts.suit : 0x111827 });
-    var dark = new THREE.MeshBasicMaterial({ color: 0x0b0f14 });
-    this.materials = [skin, cap, suit, dark];
+    var capColor = opts.cap != null ? opts.cap : 0xffffff;
+    // pele e tecidos levemente brilhantes, como molhados
+    var skin = new THREE.MeshPhongMaterial({ color: opts.skin != null ? opts.skin : skinTones[Math.floor(Math.random() * skinTones.length)], specular: 0x2b2b2b, shininess: 28 });
+    var cap = new THREE.MeshPhongMaterial({ color: capColor, specular: 0x555555, shininess: 70 });
+    var suit = new THREE.MeshPhongMaterial({ color: opts.suit != null ? opts.suit : 0x111827, specular: 0x3a3a3a, shininess: 45 });
+    var accent = new THREE.MeshPhongMaterial({ color: capColor, specular: 0x333333, shininess: 45 });
+    var lens = new THREE.MeshPhongMaterial({ color: opts.lens != null ? opts.lens : lensColors[Math.floor(Math.random() * lensColors.length)], specular: 0xffffff, shininess: 120 });
+    var dark = new THREE.MeshPhongMaterial({ color: 0x0b0f14, specular: 0x222222, shininess: 30 });
+    var lip = new THREE.MeshLambertMaterial({ color: 0x9a4a3c });
+    this.materials = [skin, cap, suit, accent, lens, dark, lip];
 
     this.root = new THREE.Group();
     this.body = new THREE.Group();
     this.root.add(this.body);
-    var seg = lowPoly ? 6 : 10;
+    var seg = lowPoly ? 8 : 14;
+    var hs = lowPoly ? 10 : 18; // cabeça
 
-    // cabeça + touca + óculos
+    // cabeça (topo para -Z, rosto para -Y) + touca + óculos
     this.head = new THREE.Group();
     this.head.position.set(0, -0.02, -0.24);
-    var headM = new THREE.Mesh(new THREE.SphereGeometry(0.11, seg, seg - 2), skin);
-    headM.scale.set(0.9, 1, 1.1);
-    this.head.add(headM);
-    var capM = new THREE.Mesh(new THREE.SphereGeometry(0.117, seg, seg - 2, 0, Math.PI * 2, 0, Math.PI * 0.62), cap);
-    capM.rotation.x = -1.15; // topo da cabeça aponta para -Z (frente) e +Y (nuca)
-    capM.scale.set(0.92, 1, 1.12);
-    this.head.add(capM);
+    var headSkin = [ellipsoid(0.108, hs, skin, 0.88, 1, 1.1), at(ellipsoid(0.072, seg, skin, 0.92, 0.95, 1), 0, -0.034, 0.05)];
+    var neck = capsule(0.056, 0.08, skin, seg);
+    headSkin.push(at(neck, 0, 0, 0.13));
+    // tira dos óculos em volta da cabeça, na altura dos olhos
+    var strap = new THREE.Mesh(new THREE.TorusGeometry(0.106, 0.0075, 4, hs + 6), dark);
+    strap.rotation.x = 0.36;
+    strap.scale.set(0.93, 1.06, 1);
+    var headDark = [strap], lenses = [];
     [-1, 1].forEach(function (s) {
-      var g = new THREE.Mesh(new THREE.SphereGeometry(0.026, 6, 4), dark);
-      g.position.set(s * 0.042, -0.07, -0.075);
-      g.scale.set(1.2, 0.7, 0.6);
-      this.head.add(g);
-    }, this);
+      headDark.push(at(ellipsoid(0.027, 10, dark, 1.35, 0.5, 0.95), s * 0.04, -0.093, -0.035));
+      lenses.push(at(ellipsoid(0.023, 10, lens, 1.35, 0.5, 0.95), s * 0.04, -0.1, -0.035));
+    });
+    if (!lowPoly) {
+      var nose = at(new THREE.Mesh(new THREE.ConeGeometry(0.016, 0.045, 6), skin), 0, -0.112, 0.012);
+      nose.scale.set(1, 1, 0.8);
+      nose.rotation.x = Math.PI * 1.08; // ponta para -Y, levemente inclinada
+      headSkin.push(nose);
+      [-1, 1].forEach(function (s) {
+        headSkin.push(at(ellipsoid(0.024, 6, skin, 0.45, 0.8, 1.2), s * 0.094, -0.004, 0.035));
+      });
+      headDark.push(at(new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.006, 0.006), dark), 0, -0.104, -0.03));
+      this.head.add(at(new THREE.Mesh(new THREE.BoxGeometry(0.034, 0.008, 0.009), lip), 0, -0.098, 0.062));
+    }
+    this.head.add(merge(headSkin, skin));
+    this.head.add(merge(headDark, dark));
+    this.head.add(merge(lenses, lens));
+    // touca: mesma forma da cabeça, um pouco maior, para cobrir todo o topo
+    var capWrap = new THREE.Group();
+    capWrap.scale.set(0.88, 1, 1.1);
+    var capM = new THREE.Mesh(new THREE.SphereGeometry(0.115, hs, hs - 4, 0, Math.PI * 2, 0, Math.PI * 0.6), cap);
+    capM.rotation.x = -1.12; // topo da cabeça aponta para -Z (frente) e +Y (nuca)
+    capWrap.add(capM);
+    this.head.add(capWrap);
     this.body.add(this.head);
 
-    // tronco
-    this.torso = capsule(0.15, 0.4, skin, seg);
-    this.torso.scale.set(1.3, 0.78, 1);
-    this.torso.position.set(0, 0.0, 0.28);
+    // tronco em V (ombros largos, cintura fina) + peitoral e dorsais
+    this.torso = new THREE.Group();
+    var torsoSkin = [lathe(P_TORSO, skin, seg + 4, 1, 0.58)];
+    if (!lowPoly) {
+      [-1, 1].forEach(function (s) {
+        torsoSkin.push(at(ellipsoid(0.076, seg, skin, 1.25, 0.34, 0.8), s * 0.08, -0.113, 0.075));
+        torsoSkin.push(at(ellipsoid(0.09, seg, skin, 0.6, 0.85, 1.6), s * 0.17, 0.01, 0.13));
+      });
+    }
+    this.torso.add(merge(torsoSkin, skin));
     this.body.add(this.torso);
-    this.hips = capsule(0.14, 0.14, suit, seg);
-    this.hips.scale.set(1.22, 0.8, 1);
-    this.hips.position.set(0, 0.0, 0.62);
+    // bermuda de competição (jammer) com cós na cor da touca
+    this.hips = new THREE.Group();
+    this.hips.add(lathe(P_SUIT, suit, seg + 4, 1, 0.66));
+    this.hips.add(lathe(P_BAND, accent, seg + 4, 1, 0.66));
     this.body.add(this.hips);
 
     // pernas
@@ -62,17 +148,13 @@
     [-1, 1].forEach(function (s) {
       var hip = new THREE.Group();
       hip.position.set(s * 0.09, 0, 0.68);
-      var thigh = capsule(0.075, 0.4, skin, seg);
-      thigh.position.z = 0.24;
-      hip.add(thigh);
+      hip.add(lathe(P_THIGH, skin, seg, 1, 0.94));
+      hip.add(lathe(P_SLEEVE, suit, seg, 1, 0.94));
+      // faixa lateral na cor da touca
+      hip.add(at(new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.03, 0.27), accent), s * 0.091, 0, 0.13));
       var knee = new THREE.Group();
       knee.position.z = 0.46;
-      var shin = capsule(0.058, 0.38, skin, seg);
-      shin.position.z = 0.22;
-      knee.add(shin);
-      var foot = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.05, 0.22), skin);
-      foot.position.set(0, 0, 0.5);
-      knee.add(foot);
+      knee.add(merge([lathe(P_SHIN, skin, seg, 1, 0.95), lathe(P_FOOT, skin, seg, 1.05, 0.55)], skin));
       hip.add(knee);
       hip.userData.knee = knee;
       this.body.add(hip);
@@ -84,17 +166,22 @@
     [-1, 1].forEach(function (s) {
       var sh = new THREE.Group();
       sh.position.set(s * 0.21, -0.01, 0.04);
-      var up = capsule(0.052, 0.24, skin, seg);
-      up.position.z = -0.15;
-      sh.add(up);
+      sh.add(merge([at(ellipsoid(0.066, seg, skin, 1, 0.9, 1.15), 0, 0, -0.012), lathe(P_UPPER, skin, seg, 1, 0.92, true)], skin));
       var elbow = new THREE.Group();
       elbow.position.z = -0.31;
-      var fore = capsule(0.045, 0.22, skin, seg);
-      fore.position.z = -0.14;
-      elbow.add(fore);
-      var hand = new THREE.Mesh(new THREE.SphereGeometry(0.055, seg, seg - 3), skin);
-      hand.scale.set(0.95, 0.42, 1.55);
-      hand.position.z = -0.32;
+      // antebraço + mão (palma achatada, dedos juntos e polegar)
+      var armSkin = [lathe(P_FORE, skin, seg, 1.1, 0.85, true), at(ellipsoid(0.042, seg, skin, 1.05, 0.4, 1.2), 0, 0, -0.335)];
+      var fingers = at(capsule(0.028, 0.05, skin, lowPoly ? 6 : 8), 0, 0, -0.395);
+      fingers.scale.set(1.3, 0.42, 1);
+      armSkin.push(fingers);
+      if (!lowPoly) {
+        var thumb = at(capsule(0.013, 0.045, skin, 6), -s * 0.04, -0.006, -0.345);
+        thumb.rotation.y = s * 0.55;
+        armSkin.push(thumb);
+      }
+      elbow.add(merge(armSkin, skin));
+      var hand = new THREE.Object3D(); // referência para respingos
+      hand.position.z = -0.34;
       elbow.add(hand);
       sh.add(elbow);
       sh.userData = { side: s, elbow: elbow, hand: hand };
