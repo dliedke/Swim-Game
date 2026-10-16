@@ -440,7 +440,8 @@
     } else if (this.state === 'finished') {
       this.v = Math.max(0, this.v - dt * 3);
       this.camY = SG.lerp(this.camY, 0.22, 1 - Math.exp(-dt * 3));
-      var fy = d.supine ? SG.yawFor(-this.dir) : SG.yawFor(this.dir);
+      // depois do toque, olha de volta para a piscina (e não para a parede)
+      var fy = SG.yawFor(-this.dir);
       SG.quatE(fy + Math.sin(this.now * 0.4) * 0.6, d.supine ? 0.2 : 0.1, 0, camQ);
       showArms = false;
     }
