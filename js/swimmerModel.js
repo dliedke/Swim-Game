@@ -127,7 +127,6 @@
     this.body.add(this.head);
 
     // tronco em V (ombros largos, cintura fina) + peitoral e dorsais
-    this.torso = new THREE.Group();
     var torsoSkin = [lathe(P_TORSO, skin, seg + 4, 1, 0.58)];
     if (!lowPoly) {
       [-1, 1].forEach(function (s) {
@@ -135,7 +134,7 @@
         torsoSkin.push(at(ellipsoid(0.09, seg, skin, 0.6, 0.85, 1.6), s * 0.17, 0.01, 0.13));
       });
     }
-    this.torso.add(merge(torsoSkin, skin));
+    this.torso = merge(torsoSkin, skin); // malha única (o pódio usa a geometria para achar o peito)
     this.body.add(this.torso);
     // bermuda de competição (jammer) com cós na cor da touca
     this.hips = new THREE.Group();
