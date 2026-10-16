@@ -436,7 +436,8 @@
     var sbFrameMat = new THREE.MeshLambertMaterial({ color: 0x1f2937 });
     // cronômetro do placar em textura separada e pequena: pode ser atualizado a cada quadro
     var clkCanvas = document.createElement('canvas');
-    clkCanvas.width = 320; clkCanvas.height = 80;
+    var clkR = SG.SCOREBOARD_CLOCK;
+    clkCanvas.width = clkR.w; clkCanvas.height = clkR.h;
     var clkTex = new THREE.CanvasTexture(clkCanvas);
     var clkMat = new THREE.MeshBasicMaterial({ map: clkTex });
     var pxM = 12.5 / 1024; // metros por pixel do placar
@@ -448,8 +449,8 @@
       sb.position.set(0, 7.5, cfg[0] + (cfg[1] === 0 ? 0.17 : -0.17));
       sb.rotation.y = cfg[1];
       group.add(sb);
-      var clk = new THREE.Mesh(new THREE.PlaneGeometry(320 * pxM, 80 * pxM), clkMat);
-      clk.position.set((1024 - 160 - 512) * pxM, (288 - 40) * pxM, 0.01);
+      var clk = new THREE.Mesh(new THREE.PlaneGeometry(clkR.w * pxM, clkR.h * pxM), clkMat);
+      clk.position.set((clkR.x + clkR.w / 2 - 512) * pxM, (288 - clkR.y - clkR.h / 2) * pxM, 0.01);
       sb.add(clk);
     });
 
