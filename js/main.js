@@ -221,7 +221,8 @@
       if (Math.abs(ex - SG.Audio.excitement) > 0.03) SG.Audio.setExcitement(ex);
       // placar
       G.sbT -= dt;
-      if (G.sbT <= 0) { G.sbT = 0.25; r.drawScoreboard(G.pool.scoreboardCanvas, G.pool.scoreboardTex); }
+      if (G.sbT <= 0) { G.sbT = G.opts.quality === 'low' ? 0.2 : 0.1; r.drawScoreboard(G.pool.scoreboardCanvas, G.pool.scoreboardTex); }
+      r.drawScoreboardClock(G.pool.clockCanvas, G.pool.clockTex);
       SG.HUD.update(r, dt, G.camMode);
     }
   }

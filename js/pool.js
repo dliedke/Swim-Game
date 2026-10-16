@@ -434,6 +434,12 @@
     sbTex.anisotropy = 4;
     var sbMat = new THREE.MeshBasicMaterial({ map: sbTex });
     var sbFrameMat = new THREE.MeshLambertMaterial({ color: 0x1f2937 });
+    // cronômetro do placar em textura separada e pequena: pode ser atualizado a cada quadro
+    var clkCanvas = document.createElement('canvas');
+    clkCanvas.width = 320; clkCanvas.height = 80;
+    var clkTex = new THREE.CanvasTexture(clkCanvas);
+    var clkMat = new THREE.MeshBasicMaterial({ map: clkTex });
+    var pxM = 12.5 / 1024; // metros por pixel do placar
     [[z1 - 0.3, Math.PI], [z0 + 0.3, 0]].forEach(function (cfg) {
       var frame = new THREE.Mesh(new THREE.BoxGeometry(13.2, 7.6, 0.3), sbFrameMat);
       frame.position.set(0, 7.5, cfg[0]);
@@ -442,6 +448,9 @@
       sb.position.set(0, 7.5, cfg[0] + (cfg[1] === 0 ? 0.17 : -0.17));
       sb.rotation.y = cfg[1];
       group.add(sb);
+      var clk = new THREE.Mesh(new THREE.PlaneGeometry(320 * pxM, 80 * pxM), clkMat);
+      clk.position.set((1024 - 160 - 512) * pxM, (288 - 40) * pxM, 0.01);
+      sb.add(clk);
     });
 
     // ---------- luzes ----------
@@ -459,6 +468,8 @@
       tileMat: tileMat,
       scoreboardCanvas: sbCanvas,
       scoreboardTex: sbTex,
+      clockCanvas: clkCanvas,
+      clockTex: clkTex,
       update: function (t, dt, excitement) {
         tileUniforms.uTime.value = t;
         crowdT += dt;
