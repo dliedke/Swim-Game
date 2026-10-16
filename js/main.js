@@ -74,7 +74,7 @@
     var race = new SG.Race(G.opts, G.scene, G.particles);
     G.race = race;
     race.onMsg = function (t, c) { SG.HUD.message(t, c); };
-    race.onRating = function (r) { SG.HUD.rating(r); };
+    race.onRating = function (r, combo) { SG.HUD.rating(r, combo); };
     race.onReaction = function (r) {
       if (r != null && r >= 0) SG.HUD.message('Reação: ' + r.toFixed(2) + 's', r < 0.65 ? 'great' : 'ok');
     };

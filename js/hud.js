@@ -46,13 +46,13 @@
   };
 
   var RATING = {
-    perfect: ['PERFEITO', 'r-perfect'], ok: ['', ''], fast: ['RÁPIDO DEMAIS', 'r-fast'],
+    perfect: ['PERFEITO', 'r-perfect'], ok: ['', ''], fast: ['SPRINT (cansa!)', 'r-fast'],
     slow: ['LENTO', 'r-slow'], same: ['ERROU!', 'r-bad']
   };
-  H.rating = function (r) {
+  H.rating = function (r, combo) {
     var e = H.el.rhLabel;
     var d = RATING[r] || ['', ''];
-    e.textContent = d[0];
+    e.textContent = d[0] + (r === 'perfect' && combo >= 3 ? ' · EMBALO x' + Math.min(combo, SG.PLAY.comboMax) : '');
     e.className = 'rh-label ' + d[1];
     void e.offsetWidth;
     e.classList.add('pop');

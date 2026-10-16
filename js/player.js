@@ -61,6 +61,8 @@
     this.reaction = null;
     this.lastRating = null;
     this.rhythmQuality = 0;
+    this.combo = 0;
+    this.tiredWarnT = -10;
     this.distance = 0;
     this.underwater = false;
     this.lastBubbleT = 0;
@@ -91,12 +93,20 @@
   };
 
   Player.prototype.staminaMult = function () {
-    return 0.5 + 0.5 * SG.smooth(this.stamina / 0.35);
+    var f = SG.PLAY.stamFloor;
+    return f + (1 - f) * SG.smooth(this.stamina / 0.35);
   };
 
+  // embalo: braçadas perfeitas seguidas dão um pouco mais de velocidade
+  Player.prototype.comboMult = function () {
+    return 1 + SG.PLAY.comboBonus * Math.min(this.combo, SG.PLAY.comboMax);
+  };
+
+  // braçada rápida demais rende um pouco menos por braçada, mas ainda acelera (e cansa bastante):
+  // apertar rápido vira um "sprint" que gasta energia, e não uma armadilha
   Player.prototype.rate = function (interval, range) {
     if (this.firstStroke) return { q: 1, r: 'ok' };
-    if (interval < range[0]) return { q: SG.clamp(Math.pow(interval / range[0], 2), 0.25, 1), r: 'fast' };
+    if (interval < range[0]) return { q: SG.clamp(Math.pow(interval / range[0], SG.PLAY.fastExp), SG.PLAY.qMin, 1), r: 'fast' };
     if (interval <= range[1]) return { q: 1, r: 'perfect' };
     return { q: 1, r: 'slow' };
   };
@@ -163,9 +173,11 @@
   };
 
   Player.prototype.feedback = function (r) {
+    if (r === 'perfect') this.combo++;
+    else if (r !== 'ok') this.combo = 0;
     this.lastRating = r;
     this.lastRatingT = this.now;
-    if (this.race.onRating) this.race.onRating(r);
+    if (this.race.onRating) this.race.onRating(r, this.combo);
   };
 
   Player.prototype.altStroke = function (arm) {
@@ -234,9 +246,13 @@
       var dt = this.now - this.lastPullT;
       if (dt < d.pullKick[0]) { q = 0.6; r = 'fast'; }
       else if (dt > d.pullKick[1]) { q = SG.clamp(1 - (dt - d.pullKick[1]) * 1.2, 0.45, 1); r = 'slow'; }
+      // ciclo inteiro curto demais (braçada + pernada sem deslizar) rende menos
+      var cycle = this.now - this.lastKickT;
+      var minCycle = d.pullKick[0] + d.kickPull[0];
+      if (cycle < minCycle) { q *= SG.clamp(Math.pow(cycle / minCycle, SG.PLAY.fastExp), SG.PLAY.qMin, 1); r = 'fast'; }
     }
     this.addPulse(J * 0.62 * q, 0.4);
-    this.spendStamina(0.0045, 1, 1);
+    this.spendStamina(0.0045, this.now - this.lastKickT, d.pullKick[0] + d.kickPull[0] + 0.15);
     this.breastStage = 'kicked';
     this.lastKickT = this.now;
     this.feedback(r);
@@ -467,7 +483,7 @@
       this.oxygen = Math.min(1, this.oxygen + (0.5 / this.breathDur) * (prev - this.breathT));
       this.breathMult = d.id === 'fly' ? 0.9 : 0.86;
     }
-    if (d.breath) this.oxygen = Math.max(0, this.oxygen - dt * 0.075);
+    if (d.breath) this.oxygen = Math.max(0, this.oxygen - dt * SG.PLAY.oxyDrain);
     else if (d.id === 'back') this.oxygen = Math.min(1, this.oxygen + dt * 0.4);
     else this.oxygen = Math.max(0, this.oxygen - dt * 0.05);
     var oxyMult = this.oxygen <= 0 ? 0.6 : (this.oxygen < 0.15 ? 0.85 : 1);
@@ -475,8 +491,15 @@
       this.stamina = Math.max(0, this.stamina - dt * 0.03);
       if (!this.oxyWarnT || now - this.oxyWarnT > 2.5) { this.oxyWarnT = now; this.msg(d.breath ? 'Sem ar! Respire (ESPAÇO)' : 'Sem ar!', 'warn'); }
     }
-    this.stamina = Math.min(1, this.stamina + dt * 0.004);
-    var mult = this.staminaMult() * oxyMult * this.breathMult;
+    // nadando no ritmo (sem apertar rápido demais) a energia volta
+    var regen = this.lastRating === 'fast' || this.lastRating === 'same' ? SG.PLAY.stamRegenIdle : SG.PLAY.stamRegen;
+    this.stamina = Math.min(1, this.stamina + dt * regen);
+    if (this.stamina < 0.2 && now - this.tiredWarnT > 4) {
+      this.tiredWarnT = now;
+      this.msg('Cansou! Volte ao ritmo para recuperar', 'warn');
+    }
+    if (now - this.lastStrokeT > 1.6 && now - Math.max(this.lastPullT, this.lastKickT) > 1.6) this.combo = 0;
+    var mult = this.staminaMult() * oxyMult * this.breathMult * this.comboMult();
     var acc = thrust * mult - SG.DRAG_K * this.v * this.v - SG.DRAG_C * this.v;
     this.v = Math.max(0, this.v + acc * dt);
     this.s += this.dir * this.v * dt;
