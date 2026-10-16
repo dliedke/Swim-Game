@@ -14,6 +14,20 @@ SG.DRAG_C = 0.05;
 SG.DRAG_K_UW = 0.26;
 
 /*
+ * Jogabilidade (jogadora):
+ *  fastExp     -> quanto a braçada rápida demais perde força (1 = quase nada, 2 = muito)
+ *  qMin        -> força mínima de uma braçada rápida demais
+ *  stamFloor   -> velocidade com energia zerada (fração da normal)
+ *  stamRegen   -> recuperação de energia por segundo nadando no ritmo
+ *  comboMax    -> braçadas perfeitas seguidas que contam para o embalo
+ *  comboBonus  -> ganho de velocidade por braçada do embalo
+ */
+SG.PLAY = {
+  fastExp: 1.15, qMin: 0.4, stamFloor: 0.62, stamRegen: 0.035, stamRegenIdle: 0.01,
+  comboMax: 10, comboBonus: 0.007, oxyDrain: 0.06
+};
+
+/*
  * type:
  *  alt    -> braços alternados (← / →)
  *  breast -> braçada (↑) + pernada (↓)
@@ -23,22 +37,22 @@ SG.STROKES = {
   free: {
     id: 'free', name: 'Crawl', label: 'LIVRE', vmax: 2.05, type: 'alt',
     ideal: [0.42, 0.62], breath: true, supine: false, flip: true,
-    turnZone: 3.4, turnPerfect: [1.25, 2.05], turnGood: [0.8, 2.7], aiRate: 0.95
+    turnZone: 3.6, turnPerfect: [1.1, 2.2], turnGood: [0.6, 2.9], aiRate: 0.95
   },
   back: {
     id: 'back', name: 'Costas', label: 'COSTAS', vmax: 1.86, type: 'alt',
     ideal: [0.5, 0.72], breath: false, supine: true, flip: true,
-    turnZone: 3.4, turnPerfect: [1.3, 2.1], turnGood: [0.85, 2.75], aiRate: 0.82
+    turnZone: 3.6, turnPerfect: [1.15, 2.25], turnGood: [0.65, 2.95], aiRate: 0.82
   },
   breast: {
     id: 'breast', name: 'Peito', label: 'PEITO', vmax: 1.62, type: 'breast',
     pullKick: [0.12, 0.38], kickPull: [0.45, 0.85], breath: false, supine: false, flip: false,
-    turnZone: 2.6, turnPerfect: [0.1, 0.75], turnGood: [0.0, 1.3], aiRate: 0.78
+    turnZone: 2.8, turnPerfect: [0.05, 0.95], turnGood: [0.0, 1.5], aiRate: 0.78
   },
   fly: {
     id: 'fly', name: 'Borboleta', label: 'BORBOLETA', vmax: 1.95, type: 'fly',
     ideal: [0.74, 1.05], breath: true, supine: false, flip: false,
-    turnZone: 2.6, turnPerfect: [0.1, 0.75], turnGood: [0.0, 1.3], aiRate: 0.85
+    turnZone: 2.8, turnPerfect: [0.05, 0.95], turnGood: [0.0, 1.5], aiRate: 0.85
   }
 };
 
@@ -54,11 +68,12 @@ SG.EVENTS = [
 
 SG.DISTANCES = [50, 100, 200, 400];
 
+// pack: quanto os adversários se aproximam da jogadora (por metro de diferença), para a prova ficar disputada
 SG.DIFFICULTY = {
-  easy:   { name: 'Fácil',    range: [0.74, 0.86] },
-  medium: { name: 'Médio',    range: [0.83, 0.93] },
-  hard:   { name: 'Difícil',  range: [0.91, 0.99] },
-  pro:    { name: 'Olímpico', range: [0.97, 1.05] }
+  easy:   { name: 'Fácil',    range: [0.74, 0.86], pack: 0.007, packMax: 0.04 },
+  medium: { name: 'Médio',    range: [0.83, 0.93], pack: 0.006, packMax: 0.035 },
+  hard:   { name: 'Difícil',  range: [0.91, 0.99], pack: 0.004, packMax: 0.025 },
+  pro:    { name: 'Olímpico', range: [0.97, 1.05], pack: 0, packMax: 0 }
 };
 
 SG.OPPONENTS = [

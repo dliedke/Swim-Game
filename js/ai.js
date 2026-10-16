@@ -48,7 +48,11 @@
     var longRace = SG.clamp((this.race.totalDist - 50) / 350, 0, 1);
     var fatigue = 1 - longRace * 0.035 * f;
     var kick = f > 0.85 ? 1.012 : 1;
-    return d.vmax * 0.97 * this.skill * strat * fatigue * kick * (1 + this.noise);
+    // prova disputada: quem está muito à frente da jogadora alivia, quem ficou para trás aperta (menos)
+    var diff = SG.DIFFICULTY[this.race.opts.difficulty];
+    var gap = this.race.player.distance - this.distance;
+    var pack = SG.clamp(gap * diff.pack, -diff.packMax, diff.packMax * 0.5);
+    return d.vmax * 0.97 * this.skill * strat * fatigue * kick * (1 + this.noise) * (1 + pack);
   };
 
   AISwimmer.prototype.update = function (dt, clock) {
