@@ -22,6 +22,7 @@ To play on your phone, publish the folder on GitHub Pages (or any static server)
 - **7 AI opponents** with different styles (sprinters, finishers, steady swimmers) and 4 difficulty levels.
 - **3 cameras**: swimmer view, TV camera and rear camera (key `C`).
 - Arena with a crowd, a live scoreboard, lane ropes, starting blocks and touch pads.
+- **Medal podium**: finish 1st, 2nd or 3rd and the top three climb the podium behind the starting blocks, get their gold, silver and bronze medals, and watch their flags go up under confetti. Press `Space` or **Ver resultados** to continue.
 - Results with splits, reaction time and a **personal record** saved in the browser.
 
 ## Controls
@@ -49,6 +50,7 @@ js/swimmerModel.js  articulated swimmer model and stroke animations
 js/player.js        player physics, rhythm, breathing, turns and camera
 js/ai.js            opponents
 js/race.js          start, ranking, results, effects
+js/podium.js        medal ceremony on the podium after the race
 js/particles.js     splashes, foam and bubbles
 js/audio.js         synthesized sounds (WebAudio)
 js/input.js         keyboard and touch
