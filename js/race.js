@@ -273,48 +273,83 @@
   };
 
   // ---------------- placar do ginásio ----------------
+  // layout (canvas 1024x576): faixa de título, destaque da jogadora (posição + tempo, em letras grandes)
+  // e a classificação compacta por raia embaixo. O tempo fica numa textura separada (drawScoreboardClock).
+  var SB_HEAD = SG.SCOREBOARD_CLOCK.y, SB_HERO = SG.SCOREBOARD_CLOCK.h, SB_ROWS = SB_HEAD + SB_HERO + 8;
+
+  // ajusta a fonte para o texto caber na largura
+  function fitFont(c, txt, size, maxW) {
+    c.font = 'bold ' + size + 'px monospace';
+    var mw = c.measureText(txt).width;
+    if (mw > maxW) { size = Math.floor(size * maxW / mw); c.font = 'bold ' + size + 'px monospace'; }
+  }
+
   // tabela: redesenhada algumas vezes por segundo (posição ao vivo + barra de progresso)
   Race.prototype.drawScoreboard = function (canvas, tex) {
     var c = canvas.getContext('2d');
     var w = canvas.width, h = canvas.height;
+    var p = this.player;
     c.fillStyle = '#05070c'; c.fillRect(0, 0, w, h);
-    c.fillStyle = '#0b1530'; c.fillRect(0, 0, w, 80);
+    // título
+    c.fillStyle = '#0b1530'; c.fillRect(0, 0, w, SB_HEAD);
     var title = this.totalDist + 'm ' + (this.event === 'medley' ? 'MEDLEY' : SG.STROKES[this.event].label);
-    c.font = 'bold 44px monospace'; c.textBaseline = 'middle';
+    c.font = 'bold 36px monospace'; c.textBaseline = 'middle';
     c.fillStyle = '#fbbf24'; c.textAlign = 'left';
-    c.fillText(title, 24, 42);
-    if (this.started && !this.ranking[0].finished) {
-      var lead = this.ranking[0];
-      c.font = 'bold 26px monospace'; c.fillStyle = '#93c5fd';
-      c.fillText(this.event === 'medley' ? SG.STROKES[lead.stroke].label : 'PISCINA ' + Math.min(this.laps, lead.length + 1) + '/' + this.laps, 420, 42);
+    c.fillText(title, 24, SB_HEAD / 2 + 2);
+    if (this.started && !p.finished && !p.dq) {
+      c.font = 'bold 26px monospace'; c.fillStyle = '#93c5fd'; c.textAlign = 'right';
+      c.fillText(this.event === 'medley' ? SG.STROKES[p.stroke].label : 'PISCINA ' + Math.min(this.laps, p.length + 1) + '/' + this.laps, w - 24, SB_HEAD / 2 + 2);
     }
-    var rowH = (h - 96) / 8;
+    // destaque da jogadora: posição atual em letras grandes
+    var hy = SB_HEAD;
+    c.fillStyle = '#111c38'; c.fillRect(0, hy, w, SB_HERO);
+    c.fillStyle = '#fde047'; c.fillRect(0, hy, 8, SB_HERO);
+    c.textAlign = 'left';
+    c.font = 'bold 26px monospace'; c.fillStyle = '#93c5fd';
+    c.fillText('POSIÇÃO', 32, hy + 30);
+    var placeTxt = p.dq ? 'DQ' : (this.started ? SG.ordinal(p.place) : '-');
+    c.fillStyle = p.dq ? '#f87171' : (this.started && p.place <= 3 ? '#fbbf24' : '#fff');
+    fitFont(c, placeTxt, 120, 240);
+    c.fillText(placeTxt, 28, hy + 108);
+    var placeW = c.measureText(placeTxt).width;
+    c.font = 'bold 28px monospace'; c.fillStyle = '#9ca3af';
+    c.fillText('de ' + this.swimmers.length, 40 + placeW, hy + 136);
+    // nome e bandeira da jogadora
+    SG.drawFlag(c, p.country, 300, hy + 46, 72, 48);
+    c.fillStyle = '#fde047';
+    fitFont(c, p.name.toUpperCase().slice(0, 12), 40, 260);
+    c.fillText(p.name.toUpperCase().slice(0, 12), 300, hy + 122);
+    c.font = 'bold 24px monospace'; c.fillStyle = '#9ca3af';
+    c.fillText('RAIA ' + (p.lane + 1), 384, hy + 72);
+
+    // classificação compacta por raia
+    var rowH = (h - SB_ROWS) / 8;
     var byLane = this.swimmers.slice().sort(function (a, b) { return a.lane - b.lane; });
     for (var i = 0; i < byLane.length; i++) {
       var s = byLane[i];
-      var y = 96 + i * rowH + rowH / 2;
-      if (s.isPlayer) { c.fillStyle = 'rgba(250,204,21,0.18)'; c.fillRect(0, y - rowH / 2 + 2, w, rowH - 4); }
-      else if (this.started && s.place === 1) { c.fillStyle = 'rgba(59,130,246,0.16)'; c.fillRect(0, y - rowH / 2 + 2, w, rowH - 4); }
-      c.font = 'bold 36px monospace';
+      var y = SB_ROWS + i * rowH + rowH / 2;
+      if (s.isPlayer) { c.fillStyle = 'rgba(250,204,21,0.18)'; c.fillRect(0, y - rowH / 2 + 1, w, rowH - 2); }
+      else if (this.started && s.place === 1) { c.fillStyle = 'rgba(59,130,246,0.16)'; c.fillRect(0, y - rowH / 2 + 1, w, rowH - 2); }
+      c.font = 'bold 28px monospace';
       c.textAlign = 'left';
       c.fillStyle = '#60a5fa';
       c.fillText(String(s.lane + 1), 24, y);
-      SG.drawFlag(c, s.country, 70, y - 16, 48, 32);
+      SG.drawFlag(c, s.country, 64, y - 12, 36, 24);
       c.fillStyle = s.isPlayer ? '#fde047' : '#e5e7eb';
-      c.fillText(s.name.toUpperCase().slice(0, 14), 134, y);
-      c.font = 'bold 26px monospace';
+      c.fillText(s.name.toUpperCase().slice(0, 14), 116, y);
+      c.font = 'bold 22px monospace';
       c.fillStyle = '#9ca3af';
-      c.fillText(s.country, 452, y);
+      c.fillText(s.country, 400, y);
       // barra de progresso da prova
-      var bx = 530, bw = 230;
-      c.fillStyle = '#1f2937'; c.fillRect(bx, y - 6, bw, 12);
+      var bx = 470, bw = 290;
+      c.fillStyle = '#1f2937'; c.fillRect(bx, y - 5, bw, 10);
       c.fillStyle = s.finished ? '#34d399' : (s.isPlayer ? '#fde047' : '#60a5fa');
-      c.fillRect(bx, y - 6, bw * SG.clamp(s.distance / this.totalDist, 0, 1), 12);
+      c.fillRect(bx, y - 5, bw * SG.clamp(s.distance / this.totalDist, 0, 1), 10);
       if (this.started) {
         c.textAlign = 'center';
-        c.font = 'bold 36px monospace';
+        c.font = 'bold 28px monospace';
         c.fillStyle = s.finished ? (s.place <= 3 ? '#fbbf24' : '#34d399') : '#cbd5e1';
-        c.fillText(s.place + '', 805, y);
+        c.fillText(s.dq ? 'DQ' : s.place + '', 805, y);
         c.textAlign = 'right';
         if (s.finished) {
           c.fillStyle = s.place === 1 ? '#fbbf24' : '#fff';
@@ -328,21 +363,24 @@
     tex.needsUpdate = true;
   };
 
-  // cronômetro: textura pequena, atualizada sempre que o texto muda (a cada quadro durante a prova)
+  // cronômetro da jogadora: textura pequena, atualizada sempre que o texto muda (a cada quadro durante a prova).
+  // Mostra o tempo corrente e, depois que ela chega, o tempo final dela.
   Race.prototype.drawScoreboardClock = function (canvas, tex) {
-    var txt = this.started ? SG.fmtTime(Math.max(0, this.clock)) : '0.00';
-    if (this.phase === 'done' || this.phase === 'results') {
-      var winner = this.ranking[0];
-      if (winner.finished) txt = SG.fmtTime(winner.finishTime);
-    }
+    var p = this.player;
+    var done = p.finished && !p.dq;
+    var txt = done ? SG.fmtTime(p.finishTime) : (this.started ? SG.fmtTime(Math.max(0, this.clock)) : '0.00');
     if (txt === this._clockTxt) return;
     this._clockTxt = txt;
     var c = canvas.getContext('2d');
     var w = canvas.width, h = canvas.height;
     c.fillStyle = '#0b1530'; c.fillRect(0, 0, w, h);
-    c.font = 'bold 48px monospace'; c.textBaseline = 'middle'; c.textAlign = 'right';
-    c.fillStyle = '#fff';
-    c.fillText(txt, w - 24, h / 2 + 2);
+    c.textBaseline = 'middle';
+    c.font = 'bold 26px monospace'; c.textAlign = 'left'; c.fillStyle = '#93c5fd';
+    c.fillText(done ? 'TEMPO FINAL' : 'TEMPO', 24, 30);
+    c.textAlign = 'right';
+    c.fillStyle = done ? (p.place <= 3 ? '#fbbf24' : '#34d399') : '#fff';
+    fitFont(c, txt, 112, w - 48);
+    c.fillText(txt, w - 24, h / 2 + 22);
     tex.needsUpdate = true;
   };
 

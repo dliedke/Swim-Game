@@ -94,4 +94,7 @@ SG.fmtTime = function (t) {
   if (s < 10) ss = '0' + ss;
   return (m > 0 ? m + ':' : '') + ss;
 };
+// placar do ginásio (canvas 1024x576): área do cronômetro da jogadora, em pixels
+SG.SCOREBOARD_CLOCK = { x: 576, y: 56, w: 448, h: 176 };
+
 SG.ordinal = function (n) { return n + 'º'; };
