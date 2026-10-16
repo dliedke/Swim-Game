@@ -273,6 +273,7 @@
   };
 
   // ---------------- placar do ginásio ----------------
+  // tabela: redesenhada algumas vezes por segundo (posição ao vivo + barra de progresso)
   Race.prototype.drawScoreboard = function (canvas, tex) {
     var c = canvas.getContext('2d');
     var w = canvas.width, h = canvas.height;
@@ -282,14 +283,18 @@
     c.font = 'bold 44px monospace'; c.textBaseline = 'middle';
     c.fillStyle = '#fbbf24'; c.textAlign = 'left';
     c.fillText(title, 24, 42);
-    c.textAlign = 'right'; c.fillStyle = '#fff';
-    c.fillText(this.started ? SG.fmtTime(Math.max(0, this.clock)) : '0.00', w - 24, 42);
+    if (this.started && !this.ranking[0].finished) {
+      var lead = this.ranking[0];
+      c.font = 'bold 26px monospace'; c.fillStyle = '#93c5fd';
+      c.fillText(this.event === 'medley' ? SG.STROKES[lead.stroke].label : 'PISCINA ' + Math.min(this.laps, lead.length + 1) + '/' + this.laps, 420, 42);
+    }
     var rowH = (h - 96) / 8;
     var byLane = this.swimmers.slice().sort(function (a, b) { return a.lane - b.lane; });
     for (var i = 0; i < byLane.length; i++) {
       var s = byLane[i];
       var y = 96 + i * rowH + rowH / 2;
       if (s.isPlayer) { c.fillStyle = 'rgba(250,204,21,0.18)'; c.fillRect(0, y - rowH / 2 + 2, w, rowH - 4); }
+      else if (this.started && s.place === 1) { c.fillStyle = 'rgba(59,130,246,0.16)'; c.fillRect(0, y - rowH / 2 + 2, w, rowH - 4); }
       c.font = 'bold 36px monospace';
       c.textAlign = 'left';
       c.fillStyle = '#60a5fa';
@@ -297,19 +302,47 @@
       SG.drawFlag(c, s.country, 70, y - 16, 48, 32);
       c.fillStyle = s.isPlayer ? '#fde047' : '#e5e7eb';
       c.fillText(s.name.toUpperCase().slice(0, 14), 134, y);
+      c.font = 'bold 26px monospace';
       c.fillStyle = '#9ca3af';
-      c.fillText(s.country, 520, y);
-      c.textAlign = 'right';
-      if (s.finished) {
-        c.fillStyle = s.place === 1 ? '#fbbf24' : '#fff';
-        c.fillText(SG.fmtTime(s.finishTime), w - 24, y);
-        c.fillStyle = '#34d399';
-        c.fillText(s.place + '', w - 250, y);
-      } else if (this.started) {
-        c.fillStyle = '#9ca3af';
-        c.fillText(Math.floor(s.distance) + 'm', w - 24, y);
+      c.fillText(s.country, 452, y);
+      // barra de progresso da prova
+      var bx = 530, bw = 230;
+      c.fillStyle = '#1f2937'; c.fillRect(bx, y - 6, bw, 12);
+      c.fillStyle = s.finished ? '#34d399' : (s.isPlayer ? '#fde047' : '#60a5fa');
+      c.fillRect(bx, y - 6, bw * SG.clamp(s.distance / this.totalDist, 0, 1), 12);
+      if (this.started) {
+        c.textAlign = 'center';
+        c.font = 'bold 36px monospace';
+        c.fillStyle = s.finished ? (s.place <= 3 ? '#fbbf24' : '#34d399') : '#cbd5e1';
+        c.fillText(s.place + '', 805, y);
+        c.textAlign = 'right';
+        if (s.finished) {
+          c.fillStyle = s.place === 1 ? '#fbbf24' : '#fff';
+          c.fillText(SG.fmtTime(s.finishTime), w - 24, y);
+        } else {
+          c.fillStyle = '#9ca3af';
+          c.fillText(s.distance.toFixed(1) + 'm', w - 24, y);
+        }
       }
     }
+    tex.needsUpdate = true;
+  };
+
+  // cronômetro: textura pequena, atualizada sempre que o texto muda (a cada quadro durante a prova)
+  Race.prototype.drawScoreboardClock = function (canvas, tex) {
+    var txt = this.started ? SG.fmtTime(Math.max(0, this.clock)) : '0.00';
+    if (this.phase === 'done' || this.phase === 'results') {
+      var winner = this.ranking[0];
+      if (winner.finished) txt = SG.fmtTime(winner.finishTime);
+    }
+    if (txt === this._clockTxt) return;
+    this._clockTxt = txt;
+    var c = canvas.getContext('2d');
+    var w = canvas.width, h = canvas.height;
+    c.fillStyle = '#0b1530'; c.fillRect(0, 0, w, h);
+    c.font = 'bold 48px monospace'; c.textBaseline = 'middle'; c.textAlign = 'right';
+    c.fillStyle = '#fff';
+    c.fillText(txt, w - 24, h / 2 + 2);
     tex.needsUpdate = true;
   };
 
