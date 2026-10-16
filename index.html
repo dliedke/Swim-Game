@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0b3d91">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Jogo de natação 3D em primeira pessoa: dispute provas contra outros nadadores com virada, saída e quatro estilos.">
+  <title>Aqua Sprint 3D</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+  <div id="uw-overlay"></div>
+  <div id="vignette"></div>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div class="hud-tl panel">
+      <div id="h-event" class="h-event"></div>
+      <div id="h-lap" class="h-lap"></div>
+      <div id="h-stroke" class="h-stroke"></div>
+    </div>
+    <div class="hud-tc">
+      <div id="h-time" class="h-time">0.00</div>
+      <div id="h-split" class="h-split"></div>
+    </div>
+    <div class="hud-tr">
+      <div class="top-btns">
+        <button id="btn-mute" class="icon-btn" title="Som (M)">🔊</button>
+        <button id="btn-cam" class="icon-btn" title="Câmera (C)">🎥</button>
+        <button id="btn-pause" class="icon-btn" title="Pausar (Esc)">⏸</button>
+      </div>
+      <div class="panel standings-panel">
+        <div id="h-place" class="place">-</div>
+        <ol id="h-standings" class="standings"></ol>
+        <div id="minimap" class="minimap"></div>
+      </div>
+    </div>
+    <div class="hud-bl panel">
+      <div class="bar-row"><span>Energia</span><div class="bar"><i id="bar-stam" class="stam"></i></div></div>
+      <div class="bar-row" id="oxy-wrap"><span>Ar</span><div class="bar"><i id="bar-oxy" class="oxy"></i></div></div>
+      <div id="h-speed" class="h-speed">0.00 m/s</div>
+    </div>
+    <div id="rhythm" class="rhythm hidden">
+      <div id="rh-label" class="rh-label"></div>
+      <div class="rh-bar"><div id="rh-zone" class="rh-zone"></div><div id="rh-marker" class="rh-marker"></div></div>
+      <div id="keyhint" class="keyhint"></div>
+    </div>
+    <div id="turn-gauge" class="turn-gauge hidden">
+      <div class="tg-bar">
+        <div id="tg-good" class="tg-good"></div>
+        <div id="tg-perfect" class="tg-perfect"></div>
+        <div id="tg-marker" class="tg-marker"></div>
+        <div class="tg-wall">PAREDE</div>
+      </div>
+      <div id="tg-label" class="tg-label"></div>
+    </div>
+    <div id="msg" class="msg"></div>
+    <div id="lane-intro" class="lane-intro"></div>
+  </div>
+
+  <!-- Controles de toque -->
+  <div id="touch" class="hidden">
+    <button id="t-left" class="tbtn big left" data-act="left">◀</button>
+    <button id="t-action" class="tbtn action" data-act="action">SALTAR!</button>
+    <button id="t-right" class="tbtn big right" data-act="right">▶</button>
+  </div>
+
+  <!-- Menu principal -->
+  <div id="menu" class="screen">
+    <div class="card menu-card">
+      <h1><span>AQUA</span> SPRINT <em>3D</em></h1>
+      <p class="tagline">Natação em primeira pessoa · sinta a raia, respire, vire e vença!</p>
+      <div class="opt"><label>Prova</label>
+        <div id="opt-event" class="seg">
+          <button data-v="free">Livre</button><button data-v="back">Costas</button><button data-v="breast">Peito</button><button data-v="fly">Borboleta</button><button data-v="medley">Medley</button>
+        </div>
+      </div>
+      <div class="opt"><label>Distância</label>
+        <div id="opt-dist" class="seg">
+          <button data-v="50">50m</button><button data-v="100">100m</button><button data-v="200">200m</button><button data-v="400">400m</button>
+        </div>
+      </div>
+      <div class="opt-row">
+        <div class="opt"><label>Piscina</label>
+          <div id="opt-pool" class="seg">
+            <button data-v="25">25m</button><button data-v="50">50m</button>
+          </div>
+        </div>
+        <div class="opt"><label>Gráficos</label>
+          <div id="opt-gfx" class="seg">
+            <button data-v="low">Leve</button><button data-v="medium">Médio</button><button data-v="high">Alto</button>
+          </div>
+        </div>
+      </div>
+      <div class="opt"><label>Dificuldade</label>
+        <div id="opt-diff" class="seg">
+          <button data-v="easy">Fácil</button><button data-v="medium">Médio</button><button data-v="hard">Difícil</button><button data-v="pro">Olímpico</button>
+        </div>
+      </div>
+      <div class="opt"><label>Seu nome</label><input id="opt-name" maxlength="14" autocomplete="off"></div>
+      <p id="menu-pb" class="pb"></p>
+      <div class="btns">
+        <button id="btn-start" class="primary">NADAR!</button>
+        <button id="btn-howto">Como jogar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Como jogar -->
+  <div id="howto" class="screen hidden">
+    <div class="card howto-card">
+      <h2>Como jogar</h2>
+      <div class="howto-grid">
+        <section>
+          <h3>🏁 Saída</h3>
+          <p>Espere o <b>bipe</b> e aperte <kbd>Espaço</kbd> (ou <b>SALTAR</b>). Saiu antes? Saída falsa! Na segunda, desclassificado. No costas você larga de dentro da água.</p>
+          <h3>🏊 Crawl e Costas</h3>
+          <p>Alterne os braços: <kbd>←</kbd> <kbd>→</kbd> (ou <kbd>A</kbd> <kbd>D</kbd>). Acerte o <b>ritmo</b>: o marcador deve cair na faixa verde. Rápido demais cansa e rende pouco.</p>
+          <h3>🦋 Borboleta</h3>
+          <p>Os dois braços juntos: <kbd>↑</kbd> ou <kbd>←</kbd>+<kbd>→</kbd> ao mesmo tempo. Ritmo mais lento e muito cansativo.</p>
+          <h3>🐸 Peito</h3>
+          <p>Braçada <kbd>↑</kbd> e logo depois pernada <kbd>↓</kbd>. Deslize antes da próxima braçada. A respiração é automática.</p>
+        </section>
+        <section>
+          <h3>💨 Respiração</h3>
+          <p>No crawl e borboleta, o ar acaba! Aperte <kbd>Espaço</kbd> para respirar — no crawl você vira a cabeça e vê o adversário da raia ao lado. Respirar demais custa velocidade.</p>
+          <h3>🔄 Virada</h3>
+          <p>Perto da parede aparece o medidor. Aperte <kbd>Espaço</kbd> na faixa verde: cambalhota no crawl/costas, toque com as duas mãos no peito/borboleta. No costas, as <b>bandeirolas</b> a 5 m avisam que a parede está chegando.</p>
+          <h3>🐬 Submerso</h3>
+          <p>Após a saída e a virada você desliza embaixo d'água. <kbd>↓</kbd> ou <kbd>Espaço</kbd> = golfinhada. Nade para subir (máx. 15 m).</p>
+          <h3>🎥 Extras</h3>
+          <p><kbd>C</kbd> troca a câmera (nadador / TV / atrás) · <kbd>Esc</kbd> pausa · <kbd>M</kbd> som. No celular use os botões na tela (melhor na horizontal).</p>
+        </section>
+      </div>
+      <div class="btns"><button id="btn-howto-close" class="primary">Entendi!</button></div>
+    </div>
+  </div>
+
+  <!-- Pausa -->
+  <div id="pause" class="screen hidden">
+    <div class="card small-card">
+      <h2>Pausado</h2>
+      <div class="btns col">
+        <button id="btn-resume" class="primary">Continuar</button>
+        <button id="btn-restart">Reiniciar prova</button>
+        <button id="btn-menu">Menu principal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resultado -->
+  <div id="results" class="screen hidden">
+    <div class="card results-card">
+      <div id="results-body"></div>
+      <div class="btns">
+        <button id="btn-again" class="primary">Nadar de novo</button>
+        <button id="btn-results-menu">Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="rotate-hint">↻ Gire o celular para jogar na horizontal</div>
+  <div id="loading">Carregando piscina…</div>
+
+  <script src="lib/three.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/water.js"></script>
+  <script src="js/pool.js"></script>
+  <script src="js/swimmerModel.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/race.js"></script>
+  <script src="js/hud.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
