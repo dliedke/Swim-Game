@@ -41,7 +41,7 @@
     if (!G.renderer) return;
     G.renderer.setSize(w, h, false);
     G.camera.aspect = w / h;
-    G.camera.fov = fovFor(w / h, G.camMode);
+    G.camera.fov = fovFor(w / h, G.podium ? 'tv' : G.camMode);
     G.camera.updateProjectionMatrix();
     if (G.particles) G.particles.setViewport(h * G.renderer.getPixelRatio(), G.camera.fov);
     document.body.classList.toggle('portrait', h > w);
@@ -69,6 +69,7 @@
   }
 
   function startRace() {
+    endPodium();
     if (G.rendererQuality !== G.opts.quality) initRenderer();
     buildWorld();
     var race = new SG.Race(G.opts, G.scene, G.particles);
@@ -95,7 +96,7 @@
       var place = race.finishOrder.indexOf(p) + 1;
       SG.HUD.message(SG.ordinal(place) + ' lugar · ' + SG.fmtTime(p.finishTime), place === 1 ? 'great' : 'big', 3500);
     };
-    race.onResults = showResults;
+    race.onResults = onRaceResults;
     race.onDQ = function () { setTimeout(function () { showResults(race.results()); }, 1800); };
     race.fpView = G.camMode === 'fp';
     applyCamMode();
@@ -183,7 +184,27 @@
     for (var t = 0; t < seconds; t += h) step(h);
   };
 
+  var noRipples = new Float32Array(SG.MAX_RIPPLES * 4);
+  function setUnderwater(uw) {
+    G.uw = uw;
+    G.scene.fog.color.copy(uw ? FOG_UW : FOG_AIR);
+    G.scene.fog.density = uw ? 0.13 : 0.006;
+    G.scene.background.copy(uw ? FOG_UW : FOG_AIR);
+    SG.HUD.setUnderwater(uw);
+    SG.Audio.setUnderwater(uw);
+  }
+
   function step(dt) {
+    if (G.podium) {
+      G.time += dt;
+      G.podium.update(dt, G.camera);
+      G.water.material.uniforms.uTime.value = G.time;
+      G.water.userData.setRipples(noRipples);
+      G.pool.update(G.time, dt, 1);
+      G.particles.update(dt);
+      G.rays.update(G.camera.position, G.time, false);
+      return;
+    }
     if (G.race && !G.paused) {
       G.time += dt;
       var r = G.race;
@@ -202,14 +223,7 @@
       var cp = G.camera.position;
       var inPool = cp.x > -SG.POOL_W / 2 && cp.x < SG.POOL_W / 2 && cp.z > 0 && cp.z < r.L;
       var uw = inPool && cp.y < SG.waveHeight(cp.x, cp.z, G.time, r.ripples) - 0.005;
-      if (uw !== G.uw) {
-        G.uw = uw;
-        G.scene.fog.color.copy(uw ? FOG_UW : FOG_AIR);
-        G.scene.fog.density = uw ? 0.13 : 0.006;
-        G.scene.background.copy(uw ? FOG_UW : FOG_AIR);
-        SG.HUD.setUnderwater(uw);
-        SG.Audio.setUnderwater(uw);
-      }
+      if (uw !== G.uw) setUnderwater(uw);
       G.rays.update(cp, G.time, uw);
       if (uw && Math.random() < dt * 12) {
         G.particles.bubbles(cp.x + (Math.random() - 0.5) * 3, cp.y - Math.random() * 1.2, cp.z + (Math.random() - 0.5) * 3, 1, 0.2);
@@ -232,6 +246,7 @@
     if (act === 'blur') { if (G.race && G.screen === null && !G.paused && G.race.phase !== 'results') togglePause(true); return; }
     if (act === 'mute') { var m = SG.Audio.toggleMute(); $('btn-mute').textContent = m ? '🔇' : '🔊'; return; }
     if (G.screen === 'menu' && act === 'action') { $('btn-start').click(); return; }
+    if (G.screen === 'podium') { if (act === 'action' || act === 'pause') $('btn-podium-next').click(); return; }
     if (!G.race || G.screen === 'results' || G.screen === 'menu' || G.screen === 'howto') return;
     if (act === 'pause') { togglePause(); return; }
     if (G.paused) return;
@@ -249,8 +264,44 @@
   // ---------------- telas ----------------
   function showScreen(name) {
     G.screen = name;
-    ['menu', 'howto', 'pause', 'results'].forEach(function (s) { $(s).classList.toggle('hidden', s !== name); });
+    ['menu', 'howto', 'pause', 'results', 'podium'].forEach(function (s) { $(s).classList.toggle('hidden', s !== name); });
     if (name === 'menu' || name === 'howto') SG.HUD.show(false);
+  }
+
+  // ---------------- pódio ----------------
+  function onRaceResults(res) {
+    var me = res.list.filter(function (x) { return x.isPlayer; })[0];
+    if (me && !me.dq && me.place <= 3) startPodium(res);
+    else showResults(res);
+  }
+
+  function startPodium(res) {
+    SG.HUD.show(false);
+    if (G.uw) setUnderwater(false);
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    G.podium = new SG.Podium(G.scene, G.race, res, G.opts.quality);
+    G.podiumRes = res;
+    resize();
+    var top = res.list.filter(function (x) { return !x.dq; }).slice(0, 3);
+    var medals = ['🥇', '🥈', '🥉'];
+    // ordem clássica na tela: 2º, 1º, 3º
+    var html = [1, 0, 2].map(function (i) {
+      var x = top[i];
+      if (!x) return '';
+      return '<div class="pc p' + (i + 1) + (x.isPlayer ? ' me' : '') + '" style="animation-delay:' + SG.PODIUM_MEDAL_TIMES[i] + 's">' +
+        '<div class="pm">' + medals[i] + '</div><div class="pn">' + x.name + (x.isPlayer && x.name !== 'Você' ? ' <em>(você)</em>' : '') + '</div>' +
+        '<div class="pt"><span class="cc">' + x.country + '</span> ' + SG.fmtTime(x.time) + '</div></div>';
+    }).join('');
+    $('podium-cards').innerHTML = html;
+    showScreen('podium');
+  }
+
+  function endPodium() {
+    if (!G.podium) return;
+    G.podium.dispose();
+    G.podium = null;
+    G.podiumRes = null;
+    resize();
   }
 
   function pbKey(o) { return o.event + '-' + o.distance + '-' + o.pool; }
@@ -383,6 +434,7 @@
     $('btn-resume').addEventListener('click', function () { togglePause(false); });
     $('btn-restart').addEventListener('click', function () { G.paused = false; startRace(); });
     $('btn-menu').addEventListener('click', backToMenu);
+    $('btn-podium-next').addEventListener('click', function () { if (G.podiumRes) showResults(G.podiumRes); });
     $('btn-again').addEventListener('click', function () { startRace(); });
     $('btn-results-menu').addEventListener('click', backToMenu);
     $('btn-pause').addEventListener('click', function () { togglePause(); });
@@ -401,6 +453,7 @@
   }
 
   function backToMenu() {
+    endPodium();
     if (G.race) { G.race.dispose(); G.race = null; }
     G.paused = false;
     G.uw = false;
