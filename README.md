@@ -1,5 +1,7 @@
 # 🏊 Aqua Sprint 3D
 
+**▶ Play now: https://dliedke.github.io/Swim-Game/**
+
 Swimming game in **3D first person**: you are the swimmer. You see the water, the lane, your arms entering the water, the bottom of the pool with the light reflections and, when you breathe, the opponent in the next lane. You race 7 opponents, with a start from the block, underwater phases, turns and four strokes.
 
 Made with **HTML + CSS + JavaScript** and [Three.js](https://threejs.org/) (bundled in `lib/`, so it works offline). Runs on **desktop and mobile**.
@@ -8,7 +10,7 @@ Made with **HTML + CSS + JavaScript** and [Three.js](https://threejs.org/) (bund
 
 Open `index.html` in your browser. That's it: no build or install needed (double-clicking works too).
 
-To play on your phone, publish the folder on GitHub Pages (or any static server) and open the link. It plays best in landscape.
+Or play online at **https://dliedke.github.io/Swim-Game/** (works on your phone too; it plays best in landscape).
 
 ## Features
 
