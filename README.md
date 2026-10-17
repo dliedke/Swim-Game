@@ -2,6 +2,8 @@
 
 **▶ Play now: https://dliedke.github.io/Swim-Game/**
 
+🌐 In English: https://dliedke.github.io/Swim-Game/?lang=en · Em português: https://dliedke.github.io/Swim-Game/?lang=pt
+
 Swimming game in **3D first person**: you are the swimmer. You see the water, the lane, your arms entering the water, the bottom of the pool with the light reflections and, when you breathe, the opponent in the next lane. You race 7 opponents, with a start from the block, underwater phases, turns and four strokes.
 
 Made with **HTML + CSS + JavaScript** and [Three.js](https://threejs.org/) (bundled in `lib/`, so it works offline). Runs on **desktop and mobile**.
@@ -10,7 +12,16 @@ Made with **HTML + CSS + JavaScript** and [Three.js](https://threejs.org/) (bund
 
 Open `index.html` in your browser. That's it: no build or install needed (double-clicking works too).
 
-Or play online at **https://dliedke.github.io/Swim-Game/** (works on your phone too; it plays best in landscape).
+Or play online at **https://dliedke.github.io/Swim-Game/** (works on your phone too; it plays best in landscape). You can also add it to your phone's home screen: it gets the swimmer icon.
+
+## Languages
+
+The game is in **English** and **Portuguese**. It picks the language of your browser: Portuguese if your browser is set to Portuguese, English for any other language. To choose one yourself, add `?lang=en` or `?lang=pt` to the address:
+
+- English: https://dliedke.github.io/Swim-Game/?lang=en
+- Português: https://dliedke.github.io/Swim-Game/?lang=pt
+
+All the text is in `js/i18n.js`, with one table per language. To change a text, edit it there; in the page, elements with a `data-i18n` attribute get their text from that file.
 
 ## Features
 
@@ -46,7 +57,9 @@ Or play online at **https://dliedke.github.io/Swim-Game/** (works on your phone 
 
 ```
 index.html          screens, HUD and touch buttons
+img/                swimmer icon (tab icon, home-screen icon and menu title)
 css/style.css       responsive layout (desktop, landscape and portrait)
+js/i18n.js          English and Portuguese texts, language detection
 js/config.js        strokes, difficulty, opponents
 js/water.js         water shader + underwater light rays
 js/pool.js          pool, lane ropes, blocks, arena, crowd, scoreboard
