@@ -167,7 +167,7 @@
     if (A.muted || !window.speechSynthesis) return;
     try {
       var u = new SpeechSynthesisUtterance(text);
-      u.lang = lang || 'pt-BR';
+      u.lang = lang || SG.t('speechLang');
       u.rate = 0.95;
       u.volume = 0.9;
       window.speechSynthesis.cancel();

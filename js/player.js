@@ -158,14 +158,14 @@
     var def = this.strokeDef();
     if (def.type === 'alt') {
       if (act === 'left' || act === 'right') this.altStroke(act);
-      else if (act === 'up' || act === 'down') this.msg('Use ← e → alternados', 'hint');
+      else if (act === 'up' || act === 'down') this.msg(SG.t('msg.altArrows'), 'hint');
     } else if (def.type === 'fly') {
       if (act === 'up') this.flyStroke();
       else if (act === 'left' || act === 'right') {
         var other = act === 'left' ? 'right' : 'left';
         this.pressT[act] = this.now;
         if (this.now - this.pressT[other] < 0.18) { this.pressT[other] = -10; this.pressT[act] = -10; this.flyStroke(); }
-      } else if (act === 'down') this.msg('Borboleta: ↑ (ou ← + → juntos)', 'hint');
+      } else if (act === 'down') this.msg(SG.t('msg.flyKeys'), 'hint');
     } else if (def.type === 'breast') {
       if (act === 'up' || act === 'left' || act === 'right') this.breastPull();
       else if (act === 'down') this.breastKick();
@@ -187,7 +187,7 @@
     var res;
     if (!this.firstStroke && this.lastArm === arm) {
       res = { q: 0.35, r: 'same' };
-      this.msg('Alterne os braços!', 'warn');
+      this.msg(SG.t('msg.alternate'), 'warn');
     } else res = this.rate(interval, d.ideal);
     this.spendStamina(0.0046, interval, mid);
     this.addPulse(this.strokeImpulse() * res.q, 0.42);
@@ -217,7 +217,7 @@
     var d = this.strokeDef();
     var J = this.strokeImpulse();
     var q = 1, r = 'ok';
-    if (this.breastStage === 'pulled') { q = 0.35; r = 'same'; this.msg('Faltou a pernada (↓)!', 'warn'); }
+    if (this.breastStage === 'pulled') { q = 0.35; r = 'same'; this.msg(SG.t('msg.missedKick'), 'warn'); }
     else if (!this.firstStroke) {
       var glide = this.now - this.lastKickT;
       if (glide < d.kickPull[0]) { q = SG.clamp(glide / d.kickPull[0], 0.3, 1); r = 'fast'; }
@@ -241,7 +241,7 @@
     var d = this.strokeDef();
     var J = this.strokeImpulse();
     var q = 1, r = 'perfect';
-    if (this.breastStage !== 'pulled') { q = 0.3; r = 'same'; this.msg('Braçada primeiro (↑)!', 'warn'); }
+    if (this.breastStage !== 'pulled') { q = 0.3; r = 'same'; this.msg(SG.t('msg.pullFirst'), 'warn'); }
     else {
       var dt = this.now - this.lastPullT;
       if (dt < d.pullKick[0]) { q = 0.6; r = 'fast'; }
@@ -261,7 +261,7 @@
   Player.prototype.breathe = function () {
     var d = this.strokeDef();
     if (!d.breath) {
-      this.msg(d.id === 'back' ? 'No costas o rosto fica fora d\'água' : 'No peito você respira a cada braçada', 'hint');
+      this.msg(SG.t(d.id === 'back' ? 'msg.backBreath' : 'msg.breastBreath'), 'hint');
       return;
     }
     if (this.breathT > 0) return;
@@ -315,7 +315,7 @@
   Player.prototype.attemptTurn = function () {
     var d = this.strokeDef();
     var dw = this.wallDist();
-    if (dw > d.turnGood[1]) { this.msg('Cedo demais para virar!', 'warn'); return; }
+    if (dw > d.turnGood[1]) { this.msg(SG.t('msg.turnEarly'), 'warn'); return; }
     var quality;
     if (dw >= d.turnPerfect[0] && dw <= d.turnPerfect[1]) quality = 'perfect';
     else if (dw >= d.turnGood[0]) quality = 'good';
@@ -357,7 +357,7 @@
     this.state = 'turn';
     this.pulses.length = 0;
     this.breathT = 0;
-    var txt = { perfect: 'VIRADA PERFEITA!', good: 'Boa virada', poor: 'Virada lenta...' }[quality];
+    var txt = SG.t({ perfect: 'msg.turnPerfect', good: 'msg.turnGood', poor: 'msg.turnPoor' }[quality]);
     this.msg(txt, quality === 'perfect' ? 'great' : (quality === 'good' ? 'ok' : 'warn'));
     if (quality === 'perfect') SG.Audio.good();
     if (this.race.onTurn) this.race.onTurn(quality);
@@ -444,7 +444,7 @@
       if (!d.supine) extraPitch = 0.04;
       this.oxygen = Math.max(0, this.oxygen - dt * 0.06);
       var uwDist = Math.abs(this.s - this.uwStartS);
-      if (uwDist > 13.5) { this.msg('Limite de 15 m: suba!', 'warn'); this.breakout(); }
+      if (uwDist > 13.5) { this.msg(SG.t('msg.uwLimit'), 'warn'); this.breakout(); }
       else if (this.uwT > 6 || (this.uwT > 1 && this.v < 1.05)) this.breakout();
       if (this.now - this.lastBubbleT > 0.25) { this.lastBubbleT = this.now; this.race.playerBubbles(); }
     } else if (this.state === 'swim') {
@@ -489,14 +489,14 @@
     var oxyMult = this.oxygen <= 0 ? 0.6 : (this.oxygen < 0.15 ? 0.85 : 1);
     if (this.oxygen <= 0) {
       this.stamina = Math.max(0, this.stamina - dt * 0.03);
-      if (!this.oxyWarnT || now - this.oxyWarnT > 2.5) { this.oxyWarnT = now; this.msg(d.breath ? 'Sem ar! Respire (ESPAÇO)' : 'Sem ar!', 'warn'); }
+      if (!this.oxyWarnT || now - this.oxyWarnT > 2.5) { this.oxyWarnT = now; this.msg(SG.t(d.breath ? 'msg.noAirBreathe' : 'msg.noAir'), 'warn'); }
     }
     // nadando no ritmo (sem apertar rápido demais) a energia volta
     var regen = this.lastRating === 'fast' || this.lastRating === 'same' ? SG.PLAY.stamRegenIdle : SG.PLAY.stamRegen;
     this.stamina = Math.min(1, this.stamina + dt * regen);
     if (this.stamina < 0.2 && now - this.tiredWarnT > 4) {
       this.tiredWarnT = now;
-      this.msg('Cansou! Volte ao ritmo para recuperar', 'warn');
+      this.msg(SG.t('msg.tired'), 'warn');
     }
     if (now - this.lastStrokeT > 1.6 && now - Math.max(this.lastPullT, this.lastKickT) > 1.6) this.combo = 0;
     var mult = this.staminaMult() * oxyMult * this.breathMult * this.comboMult();
@@ -514,7 +514,7 @@
       if (this.isLastLength()) return this.touchFinish(dw);
       this.s = this.dir > 0 ? this.race.L - 0.02 : 0.02;
       SG.Audio.wallHit();
-      this.msg('Bateu na parede!', 'warn');
+      this.msg(SG.t('msg.hitWall'), 'warn');
       this.v = 0;
       this.beginTurn('poor');
       return;

@@ -26,7 +26,7 @@
     this.ripples = new Float32Array(SG.MAX_RIPPLES * 4);
 
     var low = opts.quality === 'low';
-    this.player = new SG.Player(this, SG.PLAYER_LANE, { name: opts.name || 'Você', country: 'BRA', cap: 0xffd400 });
+    this.player = new SG.Player(this, SG.PLAYER_LANE, { name: opts.name || SG.t('you'), country: 'BRA', cap: 0xffd400 });
     this.swimmers.push(this.player);
     var diff = SG.DIFFICULTY[opts.difficulty];
     var pool = shuffle(SG.OPPONENTS.slice());
@@ -139,10 +139,9 @@
     this.clock = -1;
     this.beepAt = 1.8 + 0.9 + Math.random() * 1.1;
     var self = this;
-    var lang = 'pt-BR';
-    if (this.onMsg) this.onMsg('Às suas marcas...', 'big');
+    if (this.onMsg) this.onMsg(SG.t('msg.marks'), 'big');
     if (this.onMarks) this.onMarks();
-    SG.Audio.speak('Às suas marcas', lang);
+    SG.Audio.speak(SG.t('speak.marks'));
   };
 
   Race.prototype.playerAction = function (act) {
@@ -175,11 +174,11 @@
     if (this.falseStarts >= 2) {
       this.player.dq = true;
       this.phase = 'dq';
-      if (this.onMsg) this.onMsg('DESCLASSIFICADO! Saída falsa', 'bad');
+      if (this.onMsg) this.onMsg(SG.t('msg.dq'), 'bad');
       if (this.onDQ) this.onDQ();
       return;
     }
-    if (this.onMsg) this.onMsg('SAÍDA FALSA! Mais uma e você está fora', 'bad');
+    if (this.onMsg) this.onMsg(SG.t('msg.falseStart'), 'bad');
     this.phase = 'false';
     this.phaseT = 0;
   };
@@ -195,7 +194,7 @@
         this.clock = 0;
         this.phase = 'racing';
         SG.Audio.beep();
-        if (this.onMsg) this.onMsg('VAI!', 'go');
+        if (this.onMsg) this.onMsg(SG.t('msg.go'), 'go');
       }
     }
     if (this.started) this.clock += dt;
@@ -208,7 +207,7 @@
     }
     if (this.phase === 'racing' && this.player.state === 'block' && this.clock > 2.5 && !this.autoWarned) {
       this.autoWarned = true;
-      if (this.onMsg) this.onMsg('Salte! (ESPAÇO)', 'warn');
+      if (this.onMsg) this.onMsg(SG.t('msg.dive'), 'warn');
     }
 
     // classificação
@@ -298,7 +297,7 @@
     c.fillText(title, 24, SB_HEAD / 2 + 2);
     if (this.started && !p.finished && !p.dq) {
       c.font = 'bold 26px monospace'; c.fillStyle = '#93c5fd'; c.textAlign = 'right';
-      c.fillText(this.event === 'medley' ? SG.STROKES[p.stroke].label : 'PISCINA ' + Math.min(this.laps, p.length + 1) + '/' + this.laps, w - 24, SB_HEAD / 2 + 2);
+      c.fillText(this.event === 'medley' ? SG.STROKES[p.stroke].label : SG.t('sb.length', Math.min(this.laps, p.length + 1), this.laps), w - 24, SB_HEAD / 2 + 2);
     }
     // destaque da jogadora: posição atual em letras grandes
     var hy = SB_HEAD;
@@ -306,21 +305,21 @@
     c.fillStyle = '#fde047'; c.fillRect(0, hy, 8, SB_HERO);
     c.textAlign = 'left';
     c.font = 'bold 26px monospace'; c.fillStyle = '#93c5fd';
-    c.fillText('POSIÇÃO', 32, hy + 30);
+    c.fillText(SG.t('sb.position'), 32, hy + 30);
     var placeTxt = p.dq ? 'DQ' : (this.started ? SG.ordinal(p.place) : '-');
     c.fillStyle = p.dq ? '#f87171' : (this.started && p.place <= 3 ? '#fbbf24' : '#fff');
     fitFont(c, placeTxt, 120, 240);
     c.fillText(placeTxt, 28, hy + 108);
     var placeW = c.measureText(placeTxt).width;
     c.font = 'bold 28px monospace'; c.fillStyle = '#9ca3af';
-    c.fillText('de ' + this.swimmers.length, 40 + placeW, hy + 136);
+    c.fillText(SG.t('sb.of', this.swimmers.length), 40 + placeW, hy + 136);
     // nome e bandeira da jogadora
     SG.drawFlag(c, p.country, 300, hy + 46, 72, 48);
     c.fillStyle = '#fde047';
     fitFont(c, p.name.toUpperCase().slice(0, 12), 40, 260);
     c.fillText(p.name.toUpperCase().slice(0, 12), 300, hy + 122);
     c.font = 'bold 24px monospace'; c.fillStyle = '#9ca3af';
-    c.fillText('RAIA ' + (p.lane + 1), 384, hy + 72);
+    c.fillText(SG.t('lane', p.lane + 1), 384, hy + 72);
 
     // classificação compacta por raia
     var rowH = (h - SB_ROWS) / 8;
@@ -376,7 +375,7 @@
     c.fillStyle = '#0b1530'; c.fillRect(0, 0, w, h);
     c.textBaseline = 'middle';
     c.font = 'bold 26px monospace'; c.textAlign = 'left'; c.fillStyle = '#93c5fd';
-    c.fillText(done ? 'TEMPO FINAL' : 'TEMPO', 24, 30);
+    c.fillText(SG.t(done ? 'sb.finalTime' : 'sb.time'), 24, 30);
     c.textAlign = 'right';
     c.fillStyle = done ? (p.place <= 3 ? '#fbbf24' : '#34d399') : '#fff';
     fitFont(c, txt, 112, w - 48);

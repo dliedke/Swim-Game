@@ -31,9 +31,9 @@
     </div>
     <div class="hud-tr">
       <div class="top-btns">
-        <button id="btn-mute" class="icon-btn" title="Som (M)">🔊</button>
-        <button id="btn-cam" class="icon-btn" title="Câmera (C)">🎥</button>
-        <button id="btn-pause" class="icon-btn" title="Pausar (Esc)">⏸</button>
+        <button id="btn-mute" class="icon-btn" data-i18n-title="btn.mute" title="Som (M)">🔊</button>
+        <button id="btn-cam" class="icon-btn" data-i18n-title="btn.cam" title="Câmera (C)">🎥</button>
+        <button id="btn-pause" class="icon-btn" data-i18n-title="btn.pause" title="Pausar (Esc)">⏸</button>
       </div>
       <div class="panel standings-panel">
         <div id="h-place" class="place">-</div>
@@ -42,8 +42,8 @@
       </div>
     </div>
     <div class="hud-bl panel">
-      <div class="bar-row"><span>Energia</span><div class="bar"><i id="bar-stam" class="stam"></i></div></div>
-      <div class="bar-row" id="oxy-wrap"><span>Ar</span><div class="bar"><i id="bar-oxy" class="oxy"></i></div></div>
+      <div class="bar-row"><span data-i18n="hud.energy">Energia</span><div class="bar"><i id="bar-stam" class="stam"></i></div></div>
+      <div class="bar-row" id="oxy-wrap"><span data-i18n="hud.air">Ar</span><div class="bar"><i id="bar-oxy" class="oxy"></i></div></div>
       <div id="h-speed" class="h-speed">0.00 m/s</div>
     </div>
     <div id="rhythm" class="rhythm hidden">
@@ -56,7 +56,7 @@
         <div id="tg-good" class="tg-good"></div>
         <div id="tg-perfect" class="tg-perfect"></div>
         <div id="tg-marker" class="tg-marker"></div>
-        <div class="tg-wall">PAREDE</div>
+        <div class="tg-wall" data-i18n="hud.wall">PAREDE</div>
       </div>
       <div id="tg-label" class="tg-label"></div>
     </div>
@@ -67,7 +67,7 @@
   <!-- Controles de toque -->
   <div id="touch" class="hidden">
     <button id="t-left" class="tbtn big left" data-act="left">◀</button>
-    <button id="t-action" class="tbtn action" data-act="action">SALTAR!</button>
+    <button id="t-action" class="tbtn action" data-act="action" data-i18n="touch.diveBtn">SALTAR!</button>
     <button id="t-right" class="tbtn big right" data-act="right">▶</button>
   </div>
 
@@ -75,39 +75,39 @@
   <div id="menu" class="screen">
     <div class="card menu-card">
       <h1><img class="title-icon" src="img/swimmer.svg" alt=""><span>AQUA</span> SPRINT <em>3D</em></h1>
-      <p class="tagline">Natação em primeira pessoa · sinta a raia, respire, vire e vença!</p>
-      <div class="opt"><label>Prova</label>
+      <p class="tagline" data-i18n="menu.tagline">Natação em primeira pessoa · sinta a raia, respire, vire e vença!</p>
+      <div class="opt"><label data-i18n="menu.event">Prova</label>
         <div id="opt-event" class="seg">
-          <button data-v="free">Livre</button><button data-v="back">Costas</button><button data-v="breast">Peito</button><button data-v="fly">Borboleta</button><button data-v="medley">Medley</button>
+          <button data-v="free" data-i18n="menu.free">Livre</button><button data-v="back" data-i18n="menu.back">Costas</button><button data-v="breast" data-i18n="menu.breast">Peito</button><button data-v="fly" data-i18n="menu.fly">Borboleta</button><button data-v="medley" data-i18n="menu.medley">Medley</button>
         </div>
       </div>
-      <div class="opt"><label>Distância</label>
+      <div class="opt"><label data-i18n="menu.distance">Distância</label>
         <div id="opt-dist" class="seg">
           <button data-v="50">50m</button><button data-v="100">100m</button><button data-v="200">200m</button><button data-v="400">400m</button>
         </div>
       </div>
       <div class="opt-row">
-        <div class="opt"><label>Piscina</label>
+        <div class="opt"><label data-i18n="menu.pool">Piscina</label>
           <div id="opt-pool" class="seg">
             <button data-v="25">25m</button><button data-v="50">50m</button>
           </div>
         </div>
-        <div class="opt"><label>Gráficos</label>
+        <div class="opt"><label data-i18n="menu.gfx">Gráficos</label>
           <div id="opt-gfx" class="seg">
-            <button data-v="low">Leve</button><button data-v="medium">Médio</button><button data-v="high">Alto</button>
+            <button data-v="low" data-i18n="menu.gfxLow">Leve</button><button data-v="medium" data-i18n="menu.gfxMed">Médio</button><button data-v="high" data-i18n="menu.gfxHigh">Alto</button>
           </div>
         </div>
       </div>
-      <div class="opt"><label>Dificuldade</label>
+      <div class="opt"><label data-i18n="menu.diff">Dificuldade</label>
         <div id="opt-diff" class="seg">
-          <button data-v="easy">Fácil</button><button data-v="medium">Médio</button><button data-v="hard">Difícil</button><button data-v="pro">Olímpico</button>
+          <button data-v="easy" data-i18n="diff.easy">Fácil</button><button data-v="medium" data-i18n="diff.medium">Médio</button><button data-v="hard" data-i18n="diff.hard">Difícil</button><button data-v="pro" data-i18n="diff.pro">Olímpico</button>
         </div>
       </div>
-      <div class="opt"><label>Seu nome</label><input id="opt-name" maxlength="14" autocomplete="off"></div>
+      <div class="opt"><label data-i18n="menu.name">Seu nome</label><input id="opt-name" maxlength="14" autocomplete="off"></div>
       <p id="menu-pb" class="pb"></p>
       <div class="btns">
-        <button id="btn-start" class="primary">NADAR!</button>
-        <button id="btn-howto">Como jogar</button>
+        <button id="btn-start" class="primary" data-i18n="menu.start">NADAR!</button>
+        <button id="btn-howto" data-i18n="menu.howto">Como jogar</button>
       </div>
     </div>
   </div>
@@ -115,50 +115,50 @@
   <!-- Como jogar -->
   <div id="howto" class="screen hidden">
     <div class="card howto-card">
-      <h2>Como jogar</h2>
+      <h2 data-i18n="howto.title">Como jogar</h2>
       <div class="howto-grid">
         <section>
-          <h3>🏁 Saída</h3>
-          <p>Espere o <b>bipe</b> e aperte <kbd>Espaço</kbd> (ou <b>SALTAR</b>). Saiu antes? Saída falsa! Na segunda, desclassificado. No costas você larga de dentro da água.</p>
-          <h3>🏊 Crawl e Costas</h3>
-          <p>Alterne os braços: <kbd>←</kbd> <kbd>→</kbd> (ou <kbd>A</kbd> <kbd>D</kbd>). Acerte o <b>ritmo</b>: o marcador deve cair na faixa verde. Braçadas perfeitas seguidas dão <b>embalo</b> (mais velocidade). Apertar rápido é um <b>sprint</b>: acelera, mas gasta energia. Cansou? Volte ao ritmo que a energia recupera.</p>
-          <h3>🦋 Borboleta</h3>
-          <p>Os dois braços juntos: <kbd>↑</kbd> ou <kbd>←</kbd>+<kbd>→</kbd> ao mesmo tempo. Ritmo mais lento e muito cansativo.</p>
-          <h3>🐸 Peito</h3>
-          <p>Braçada <kbd>↑</kbd> e logo depois pernada <kbd>↓</kbd>. Deslize antes da próxima braçada. A respiração é automática.</p>
+          <h3 data-i18n="howto.startH">🏁 Saída</h3>
+          <p data-i18n="howto.start">Espere o <b>bipe</b> e aperte <kbd>Espaço</kbd> (ou <b>SALTAR</b>). Saiu antes? Saída falsa! Na segunda, desclassificado. No costas você larga de dentro da água.</p>
+          <h3 data-i18n="howto.altH">🏊 Crawl e Costas</h3>
+          <p data-i18n="howto.alt">Alterne os braços: <kbd>←</kbd> <kbd>→</kbd> (ou <kbd>A</kbd> <kbd>D</kbd>). Acerte o <b>ritmo</b>: o marcador deve cair na faixa verde. Braçadas perfeitas seguidas dão <b>embalo</b> (mais velocidade). Apertar rápido é um <b>sprint</b>: acelera, mas gasta energia. Cansou? Volte ao ritmo que a energia recupera.</p>
+          <h3 data-i18n="howto.flyH">🦋 Borboleta</h3>
+          <p data-i18n="howto.fly">Os dois braços juntos: <kbd>↑</kbd> ou <kbd>←</kbd>+<kbd>→</kbd> ao mesmo tempo. Ritmo mais lento e muito cansativo.</p>
+          <h3 data-i18n="howto.breastH">🐸 Peito</h3>
+          <p data-i18n="howto.breast">Braçada <kbd>↑</kbd> e logo depois pernada <kbd>↓</kbd>. Deslize antes da próxima braçada. A respiração é automática.</p>
         </section>
         <section>
-          <h3>💨 Respiração</h3>
-          <p>No crawl e borboleta, o ar acaba! Aperte <kbd>Espaço</kbd> para respirar — no crawl você vira a cabeça e vê o adversário da raia ao lado. Respirar demais custa velocidade.</p>
-          <h3>🔄 Virada</h3>
-          <p>Perto da parede aparece o medidor. Aperte <kbd>Espaço</kbd> na faixa verde: cambalhota no crawl/costas, toque com as duas mãos no peito/borboleta. No costas, as <b>bandeirolas</b> a 5 m avisam que a parede está chegando.</p>
-          <h3>🐬 Submerso</h3>
-          <p>Após a saída e a virada você desliza embaixo d'água. <kbd>↓</kbd> ou <kbd>Espaço</kbd> = golfinhada. Nade para subir (máx. 15 m).</p>
-          <h3>🎥 Extras</h3>
-          <p><kbd>C</kbd> troca a câmera (nadador / TV / atrás) · <kbd>Esc</kbd> pausa · <kbd>M</kbd> som. No celular use os botões na tela (melhor na horizontal).</p>
+          <h3 data-i18n="howto.breathH">💨 Respiração</h3>
+          <p data-i18n="howto.breath">No crawl e borboleta, o ar acaba! Aperte <kbd>Espaço</kbd> para respirar — no crawl você vira a cabeça e vê o adversário da raia ao lado. Respirar demais custa velocidade.</p>
+          <h3 data-i18n="howto.turnH">🔄 Virada</h3>
+          <p data-i18n="howto.turn">Perto da parede aparece o medidor. Aperte <kbd>Espaço</kbd> na faixa verde: cambalhota no crawl/costas, toque com as duas mãos no peito/borboleta. No costas, as <b>bandeirolas</b> a 5 m avisam que a parede está chegando.</p>
+          <h3 data-i18n="howto.uwH">🐬 Submerso</h3>
+          <p data-i18n="howto.uw">Após a saída e a virada você desliza embaixo d'água. <kbd>↓</kbd> ou <kbd>Espaço</kbd> = golfinhada. Nade para subir (máx. 15 m).</p>
+          <h3 data-i18n="howto.extraH">🎥 Extras</h3>
+          <p data-i18n="howto.extra"><kbd>C</kbd> troca a câmera (nadador / TV / atrás) · <kbd>Esc</kbd> pausa · <kbd>M</kbd> som. No celular use os botões na tela (melhor na horizontal).</p>
         </section>
       </div>
-      <div class="btns"><button id="btn-howto-close" class="primary">Entendi!</button></div>
+      <div class="btns"><button id="btn-howto-close" class="primary" data-i18n="howto.ok">Entendi!</button></div>
     </div>
   </div>
 
   <!-- Pausa -->
   <div id="pause" class="screen hidden">
     <div class="card small-card">
-      <h2>Pausado</h2>
+      <h2 data-i18n="pause.title">Pausado</h2>
       <div class="btns col">
-        <button id="btn-resume" class="primary">Continuar</button>
-        <button id="btn-restart">Reiniciar prova</button>
-        <button id="btn-menu">Menu principal</button>
+        <button id="btn-resume" class="primary" data-i18n="pause.resume">Continuar</button>
+        <button id="btn-restart" data-i18n="pause.restart">Reiniciar prova</button>
+        <button id="btn-menu" data-i18n="pause.menu">Menu principal</button>
       </div>
     </div>
   </div>
 
   <!-- Pódio (3D ao fundo) -->
   <div id="podium" class="screen podium-screen hidden">
-    <div class="podium-title">🏆 PÓDIO</div>
+    <div class="podium-title" data-i18n="podium.title">🏆 PÓDIO</div>
     <div id="podium-cards" class="podium-cards"></div>
-    <button id="btn-podium-next" class="podium-next">Ver resultados ▶</button>
+    <button id="btn-podium-next" class="podium-next" data-i18n="podium.next">Ver resultados ▶</button>
   </div>
 
   <!-- Resultado -->
@@ -166,16 +166,17 @@
     <div class="card results-card">
       <div id="results-body"></div>
       <div class="btns">
-        <button id="btn-again" class="primary">Nadar de novo</button>
-        <button id="btn-results-menu">Menu</button>
+        <button id="btn-again" class="primary" data-i18n="res.again">Nadar de novo</button>
+        <button id="btn-results-menu" data-i18n="res.menu">Menu</button>
       </div>
     </div>
   </div>
 
-  <div id="rotate-hint">↻ Gire o celular para jogar na horizontal</div>
-  <div id="loading">Carregando piscina…</div>
+  <div id="rotate-hint" data-i18n="rotate">↻ Gire o celular para jogar na horizontal</div>
+  <div id="loading" data-i18n="loading">Carregando piscina…</div>
 
   <script src="lib/three.min.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/config.js"></script>
   <script src="js/water.js"></script>
   <script src="js/pool.js"></script>
