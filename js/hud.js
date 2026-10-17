@@ -46,13 +46,13 @@
   };
 
   var RATING = {
-    perfect: ['PERFEITO', 'r-perfect'], ok: ['', ''], fast: ['SPRINT (cansa!)', 'r-fast'],
-    slow: ['LENTO', 'r-slow'], same: ['ERROU!', 'r-bad']
+    perfect: [SG.t('rate.perfect'), 'r-perfect'], ok: ['', ''], fast: [SG.t('rate.fast'), 'r-fast'],
+    slow: [SG.t('rate.slow'), 'r-slow'], same: [SG.t('rate.same'), 'r-bad']
   };
   H.rating = function (r, combo) {
     var e = H.el.rhLabel;
     var d = RATING[r] || ['', ''];
-    e.textContent = d[0] + (r === 'perfect' && combo >= 3 ? ' · EMBALO x' + Math.min(combo, SG.PLAY.comboMax) : '');
+    e.textContent = d[0] + (r === 'perfect' && combo >= 3 ? SG.t('rate.streak', Math.min(combo, SG.PLAY.comboMax)) : '');
     e.className = 'rh-label ' + d[1];
     void e.offsetWidth;
     e.classList.add('pop');
@@ -78,7 +78,7 @@
     var d = SG.STROKES[p.stroke];
     var lapN = Math.min(race.laps, p.length + 1);
     e.event.textContent = race.totalDist + 'm ' + (race.event === 'medley' ? 'MEDLEY' : d.label);
-    e.lap.textContent = 'Piscina ' + lapN + '/' + race.laps + ' · ' + Math.floor(p.distance) + 'm';
+    e.lap.textContent = SG.t('hud.lap', lapN, race.laps, Math.floor(p.distance));
     e.stroke.textContent = d.name + (race.event === 'medley' ? ' (medley)' : '');
     var clk = race.started ? (p.finished ? p.finishTime : race.clock) : 0;
     e.time.textContent = SG.fmtTime(Math.max(0, clk));
@@ -128,14 +128,14 @@
     if (p.state === 'swim') {
       var maxT, zone, since;
       if (d.type === 'breast') {
-        if (p.breastStage === 'pulled') { zone = d.pullKick; since = p.now - p.lastPullT; maxT = 0.9; hint = touchHint ? '<b>PERNADA</b>' : '<kbd>↓</kbd> pernada'; }
-        else { zone = d.kickPull; since = p.now - p.lastKickT; maxT = 1.3; hint = touchHint ? '<b>BRAÇADA</b>' : '<kbd>↑</kbd> braçada'; }
+        if (p.breastStage === 'pulled') { zone = d.pullKick; since = p.now - p.lastPullT; maxT = 0.9; hint = SG.t(touchHint ? 'hint.kickTouch' : 'hint.kickKey'); }
+        else { zone = d.kickPull; since = p.now - p.lastKickT; maxT = 1.3; hint = SG.t(touchHint ? 'hint.pullTouch' : 'hint.pullKey'); }
       } else {
         zone = d.ideal; since = p.now - p.lastStrokeT; maxT = d.ideal[1] * 1.7;
         if (d.type === 'alt') {
           var next = p.lastArm === 'left' ? 'right' : 'left';
           hint = touchHint ? '' : (next === 'left' ? '<kbd class="hot">←</kbd> <kbd>→</kbd>' : '<kbd>←</kbd> <kbd class="hot">→</kbd>');
-        } else hint = touchHint ? 'Toque os dois juntos' : '<kbd>↑</kbd> ou <kbd>←</kbd>+<kbd>→</kbd>';
+        } else hint = SG.t(touchHint ? 'hint.flyTouch' : 'hint.flyKey');
       }
       if (p.firstStroke) since = zone[0] + 0.01;
       e.rhZone.style.left = (zone[0] / maxT * 100) + '%';
@@ -143,11 +143,11 @@
       e.rhMarker.style.left = (SG.clamp(since / maxT, 0, 1) * 100) + '%';
       var inZ = since >= zone[0] && since <= zone[1];
       e.rhMarker.classList.toggle('in', inZ);
-      if (d.breath && p.oxygen < 0.35) hint += touchHint ? ' · <b class="warn">RESPIRE</b>' : ' · <kbd class="warn">ESPAÇO</kbd> respirar';
+      if (d.breath && p.oxygen < 0.35) hint += SG.t(touchHint ? 'hint.breatheTouch' : 'hint.breatheKey');
     } else if (p.state === 'underwater') {
       e.rhZone.style.width = '0';
       e.rhMarker.style.left = '0';
-      hint = touchHint ? 'Golfinhada · nade para subir' : '<kbd>↓</kbd> golfinhada · nade para subir';
+      hint = SG.t(touchHint ? 'hint.uwTouch' : 'hint.uwKey');
     }
     if (e.keyhint._h !== hint) { e.keyhint.innerHTML = hint; e.keyhint._h = hint; }
 
@@ -164,8 +164,8 @@
       var dw = p.wallDist();
       e.turnMarker.style.top = SG.clamp(toPct(dw), 0, 100) + '%';
       var inGood = dw <= d.turnGood[1];
-      e.turnLabel.innerHTML = (d.flip && race.strokeAt(p.length + 1) === p.stroke ? 'CAMBALHOTA' : 'TOQUE + VIRADA') +
-        '<br>' + (inGood ? (SG.isTouch ? '<b>AGORA!</b>' : '<b>ESPAÇO!</b>') : dw.toFixed(1) + 'm');
+      e.turnLabel.innerHTML = SG.t(d.flip && race.strokeAt(p.length + 1) === p.stroke ? 'turn.flip' : 'turn.touch') +
+        '<br>' + (inGood ? '<b>' + SG.t(SG.isTouch ? 'turn.nowTouch' : 'turn.nowKey') + '</b>' : dw.toFixed(1) + 'm');
       e.turn.classList.toggle('go', dw >= d.turnPerfect[0] && dw <= d.turnPerfect[1]);
     }
 
@@ -177,21 +177,22 @@
       var st = p.state;
       if (st === 'block' || st === 'wallstart') {
         setBtn(e.tL, 'left', '', false); setBtn(e.tR, 'right', '', false);
-        setBtn(e.tA, 'action', race.phase === 'intro' ? 'PULAR INTRO' : 'SALTAR!', true);
+        setBtn(e.tA, 'action', SG.t(race.phase === 'intro' ? 'touch.skip' : 'touch.dive'), true);
       } else if (st === 'underwater') {
-        if (d.type === 'breast') { setBtn(e.tL, 'down', '▼<small>golfinhada</small>', true); setBtn(e.tR, 'up', '▲<small>subir</small>', true); }
-        else { setBtn(e.tL, 'left', '◀<small>subir</small>', true); setBtn(e.tR, 'right', '▶<small>subir</small>', true); }
-        setBtn(e.tA, 'down', 'GOLFINHADA', true);
+        var up = '<small>' + SG.t('touch.up') + '</small>';
+        if (d.type === 'breast') { setBtn(e.tL, 'down', '▼<small>' + SG.t('touch.dolphin') + '</small>', true); setBtn(e.tR, 'up', '▲' + up, true); }
+        else { setBtn(e.tL, 'left', '◀' + up, true); setBtn(e.tR, 'right', '▶' + up, true); }
+        setBtn(e.tA, 'down', SG.t('touch.dolphinBig'), true);
       } else if (st === 'swim') {
-        if (d.type === 'breast') { setBtn(e.tL, 'down', '▼<small>pernada</small>', true); setBtn(e.tR, 'up', '▲<small>braçada</small>', true); }
-        else if (d.type === 'fly') { setBtn(e.tL, 'left', '◀<small>juntos</small>', true); setBtn(e.tR, 'right', '<small>juntos</small>▶', true); }
+        if (d.type === 'breast') { setBtn(e.tL, 'down', '▼<small>' + SG.t('touch.kick') + '</small>', true); setBtn(e.tR, 'up', '▲<small>' + SG.t('touch.pull') + '</small>', true); }
+        else if (d.type === 'fly') { var tg = '<small>' + SG.t('touch.together') + '</small>'; setBtn(e.tL, 'left', '◀' + tg, true); setBtn(e.tR, 'right', tg + '▶', true); }
         else {
           var nx = p.lastArm === 'left' ? 'right' : 'left';
-          setBtn(e.tL, 'left', '◀<small>esquerdo</small>', true); setBtn(e.tR, 'right', '<small>direito</small>▶', true);
+          setBtn(e.tL, 'left', '◀<small>' + SG.t('touch.left') + '</small>', true); setBtn(e.tR, 'right', '<small>' + SG.t('touch.right') + '</small>▶', true);
           e.tL.classList.toggle('hot', nx === 'left'); e.tR.classList.toggle('hot', nx === 'right');
         }
-        if (p.inTurnZone()) setBtn(e.tA, 'action', 'VIRADA!', true);
-        else setBtn(e.tA, 'action', 'RESPIRAR', d.breath);
+        if (p.inTurnZone()) setBtn(e.tA, 'action', SG.t('touch.turn'), true);
+        else setBtn(e.tA, 'action', SG.t('touch.breathe'), d.breath);
         e.tA.classList.toggle('turn', p.inTurnZone());
       } else {
         setBtn(e.tL, 'left', '', false); setBtn(e.tR, 'right', '', false); setBtn(e.tA, 'action', '', false);

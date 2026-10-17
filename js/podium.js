@@ -9,9 +9,9 @@
   var FLAG_Z = -8.6;      // mastros atrás do pódio
   // por colocação (1º, 2º, 3º): posição x, altura do degrau, giro para a câmera, instante da medalha
   var STEPS = [
-    { x: 0, h: 0.9, yaw: 0, t: 5.0, color: 0xfbbf24, css: '#fbbf24', name: 'ouro' },
-    { x: -1.3, h: 0.6, yaw: 0.22, t: 3.6, color: 0xd1d5db, css: '#e5e7eb', name: 'prata' },
-    { x: 1.3, h: 0.4, yaw: -0.22, t: 2.2, color: 0xcd7f32, css: '#f59e0b', name: 'bronze' }
+    { x: 0, h: 0.9, yaw: 0, t: 5.0, color: 0xfbbf24, css: '#fbbf24', name: SG.t('medal.gold') },
+    { x: -1.3, h: 0.6, yaw: 0.22, t: 3.6, color: 0xd1d5db, css: '#e5e7eb', name: SG.t('medal.silver') },
+    { x: 1.3, h: 0.4, yaw: -0.22, t: 2.2, color: 0xcd7f32, css: '#f59e0b', name: SG.t('medal.bronze') }
   ];
   var FLAG_T0 = 5.8, FLAG_T1 = 10.5;
   SG.PODIUM_MEDAL_TIMES = STEPS.map(function (s) { return s.t; });
@@ -82,7 +82,7 @@
       c.moveTo(20, 8); c.lineTo(w - 20, 8); c.lineTo(w - 20, 64); c.lineTo(w / 2 + 18, 64); c.lineTo(w / 2, 90); c.lineTo(w / 2 - 18, 64); c.lineTo(20, 64);
       c.closePath(); c.fill();
       c.fillStyle = '#1c1917'; c.font = 'bold 44px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
-      c.fillText('VOCÊ', w / 2, 38);
+      c.fillText(SG.t('you').toUpperCase(), w / 2, 38);
     });
     var mat = new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true });
     mats.push(mat);
@@ -251,7 +251,7 @@
         w.medal.visible = true;
         SG.Audio.good();
         if (i === 0) { self.burst(); SG.Audio.cheer(); self.fanfare(); }
-        if (w.entry.isPlayer) SG.Audio.speak('Medalha de ' + st.name + ' para ' + w.entry.name + '!', 'pt-BR');
+        if (w.entry.isPlayer) SG.Audio.speak(SG.t('speak.medal', st.name, w.entry.name));
       }
       if (w.given) {
         var k = SG.clamp(since / 0.7, 0, 1);

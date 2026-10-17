@@ -20,12 +20,13 @@ Or play online at **https://dliedke.github.io/Swim-Game/** (works on your phone 
 - **Real start**: "Take your marks", then the beep. False start = warning, and a second one disqualifies you. Backstroke starts in the water.
 - **Turns**: flip turn in freestyle and backstroke, touch turn in breaststroke and butterfly, with a gauge that shows the perfect zone. In backstroke, the **flags at 5 m** pass overhead.
 - **Underwater**: glide after the start and after each turn, with dolphin kicks (15 m limit).
-- **Rhythm, energy and air**: perfect strokes in a row build a **streak** ("embalo") that adds speed; tapping faster is a **sprint** that burns energy, which comes back when you return to the rhythm. The air runs out if you don't breathe, and breathing too much costs speed.
+- **Rhythm, energy and air**: perfect strokes in a row build a **streak** that adds speed; tapping faster is a **sprint** that burns energy, which comes back when you return to the rhythm. The air runs out if you don't breathe, and breathing too much costs speed.
 - **Close races**: opponents far ahead ease off a little and the ones behind push, so the pack stays together (except on Olympic).
 - **7 AI opponents** with different styles (sprinters, finishers, steady swimmers) and 4 difficulty levels.
 - **3 cameras**: swimmer view, TV camera and rear camera (key `C`).
 - Arena with a crowd, a live scoreboard, lane ropes, starting blocks and touch pads.
-- **Medal podium**: finish 1st, 2nd or 3rd and the top three climb the podium behind the starting blocks, get their gold, silver and bronze medals, and watch their flags go up under confetti. Press `Space` or **Ver resultados** to continue.
+- **Medal podium**: finish 1st, 2nd or 3rd and the top three climb the podium behind the starting blocks, get their gold, silver and bronze medals, and watch their flags go up under confetti. Press `Space` or **See results** to continue.
+- **English and Portuguese**: the game follows your browser language (Portuguese for `pt`, English otherwise). Add `?lang=pt` or `?lang=en` to the URL to force one.
 - Results with splits, reaction time and a **personal record** saved in the browser.
 
 ## Controls

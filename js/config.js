@@ -35,22 +35,22 @@ SG.PLAY = {
  */
 SG.STROKES = {
   free: {
-    id: 'free', name: 'Crawl', label: 'LIVRE', vmax: 2.05, type: 'alt',
+    id: 'free', name: SG.t('stroke.free'), label: SG.t('label.free'), vmax: 2.05, type: 'alt',
     ideal: [0.42, 0.62], breath: true, supine: false, flip: true,
     turnZone: 3.6, turnPerfect: [1.1, 2.2], turnGood: [0.6, 2.9], aiRate: 0.95
   },
   back: {
-    id: 'back', name: 'Costas', label: 'COSTAS', vmax: 1.86, type: 'alt',
+    id: 'back', name: SG.t('stroke.back'), label: SG.t('label.back'), vmax: 1.86, type: 'alt',
     ideal: [0.5, 0.72], breath: false, supine: true, flip: true,
     turnZone: 3.6, turnPerfect: [1.15, 2.25], turnGood: [0.65, 2.95], aiRate: 0.82
   },
   breast: {
-    id: 'breast', name: 'Peito', label: 'PEITO', vmax: 1.62, type: 'breast',
+    id: 'breast', name: SG.t('stroke.breast'), label: SG.t('label.breast'), vmax: 1.62, type: 'breast',
     pullKick: [0.12, 0.38], kickPull: [0.45, 0.85], breath: false, supine: false, flip: false,
     turnZone: 2.8, turnPerfect: [0.05, 0.95], turnGood: [0.0, 1.5], aiRate: 0.78
   },
   fly: {
-    id: 'fly', name: 'Borboleta', label: 'BORBOLETA', vmax: 1.95, type: 'fly',
+    id: 'fly', name: SG.t('stroke.fly'), label: SG.t('label.fly'), vmax: 1.95, type: 'fly',
     ideal: [0.74, 1.05], breath: true, supine: false, flip: false,
     turnZone: 2.8, turnPerfect: [0.05, 0.95], turnGood: [0.0, 1.5], aiRate: 0.85
   }
@@ -59,21 +59,21 @@ SG.STROKES = {
 SG.MEDLEY_ORDER = ['fly', 'back', 'breast', 'free'];
 
 SG.EVENTS = [
-  { id: 'free', name: 'Livre (Crawl)' },
-  { id: 'back', name: 'Costas' },
-  { id: 'breast', name: 'Peito' },
-  { id: 'fly', name: 'Borboleta' },
-  { id: 'medley', name: 'Medley (4 estilos)' }
+  { id: 'free', name: SG.t('event.free') },
+  { id: 'back', name: SG.t('stroke.back') },
+  { id: 'breast', name: SG.t('stroke.breast') },
+  { id: 'fly', name: SG.t('stroke.fly') },
+  { id: 'medley', name: SG.t('event.medley') }
 ];
 
 SG.DISTANCES = [50, 100, 200, 400];
 
 // pack: quanto os adversários se aproximam da jogadora (por metro de diferença), para a prova ficar disputada
 SG.DIFFICULTY = {
-  easy:   { name: 'Fácil',    range: [0.74, 0.86], pack: 0.007, packMax: 0.04 },
-  medium: { name: 'Médio',    range: [0.83, 0.93], pack: 0.006, packMax: 0.035 },
-  hard:   { name: 'Difícil',  range: [0.91, 0.99], pack: 0.004, packMax: 0.025 },
-  pro:    { name: 'Olímpico', range: [0.97, 1.05], pack: 0, packMax: 0 }
+  easy:   { name: SG.t('diff.easy'),   range: [0.74, 0.86], pack: 0.007, packMax: 0.04 },
+  medium: { name: SG.t('diff.medium'), range: [0.83, 0.93], pack: 0.006, packMax: 0.035 },
+  hard:   { name: SG.t('diff.hard'),   range: [0.91, 0.99], pack: 0.004, packMax: 0.025 },
+  pro:    { name: SG.t('diff.pro'),    range: [0.97, 1.05], pack: 0, packMax: 0 }
 };
 
 SG.OPPONENTS = [
@@ -112,4 +112,4 @@ SG.fmtTime = function (t) {
 // placar do ginásio (canvas 1024x576): área do cronômetro da jogadora, em pixels
 SG.SCOREBOARD_CLOCK = { x: 576, y: 56, w: 448, h: 176 };
 
-SG.ordinal = function (n) { return n + 'º'; };
+// SG.ordinal fica em i18n.js

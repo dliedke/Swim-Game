@@ -4,7 +4,7 @@
   var G = {
     renderer: null, scene: null, camera: null, pool: null, water: null, particles: null,
     race: null, camMode: 'fp', paused: false, screen: 'menu', time: 0, sbT: 0,
-    opts: { event: 'free', distance: 50, pool: 25, difficulty: 'medium', quality: SG.isMobile ? 'low' : 'high', name: 'Você' }
+    opts: { event: 'free', distance: 50, pool: 25, difficulty: 'medium', quality: SG.isMobile ? 'low' : 'high', name: SG.t('you') }
   };
   SG.G = G;
 
@@ -77,7 +77,7 @@
     race.onMsg = function (t, c) { SG.HUD.message(t, c); };
     race.onRating = function (r, combo) { SG.HUD.rating(r, combo); };
     race.onReaction = function (r) {
-      if (r != null && r >= 0) SG.HUD.message('Reação: ' + r.toFixed(2) + 's', r < 0.65 ? 'great' : 'ok');
+      if (r != null && r >= 0) SG.HUD.message(SG.t('msg.reaction', r.toFixed(2)), r < 0.65 ? 'great' : 'ok');
     };
     race.onTurn = function () { };
     race.onMarks = function () { SG.HUD.laneIntro(null); };
@@ -87,14 +87,14 @@
       $('h-split').classList.add('show');
       setTimeout(function () { $('h-split').classList.remove('show'); }, 2500);
       if (race.event === 'medley' && race.strokeAt(p.length) !== race.strokeAt(p.length - 1)) {
-        setTimeout(function () { SG.HUD.message('Agora: ' + SG.STROKES[p.stroke].name.toUpperCase(), 'big'); }, 500);
+        setTimeout(function () { SG.HUD.message(SG.t('msg.now', SG.STROKES[p.stroke].name.toUpperCase()), 'big'); }, 500);
       }
     };
     race.onPlayerFinish = function (p) {
       SG.Audio.horn();
       SG.Audio.cheer();
       var place = race.finishOrder.indexOf(p) + 1;
-      SG.HUD.message(SG.ordinal(place) + ' lugar · ' + SG.fmtTime(p.finishTime), place === 1 ? 'great' : 'big', 3500);
+      SG.HUD.message(SG.t('msg.place', SG.ordinal(place), SG.fmtTime(p.finishTime)), place === 1 ? 'great' : 'big', 3500);
     };
     race.onResults = onRaceResults;
     race.onDQ = function () { setTimeout(function () { showResults(race.results()); }, 1800); };
@@ -113,7 +113,7 @@
   }
 
   // ---------------- câmeras ----------------
-  var CAM_NAMES = { fp: 'Visão do nadador', tv: 'Câmera de TV', chase: 'Câmera atrás' };
+  var CAM_NAMES = { fp: SG.t('cam.fp'), tv: SG.t('cam.tv'), chase: SG.t('cam.chase') };
   function applyCamMode() {
     var r = G.race;
     if (!r) return;
@@ -141,7 +141,7 @@
       if (lane !== G.introLane) {
         G.introLane = lane;
         var s = r.swimmers.filter(function (q) { return q.lane === lane; })[0];
-        SG.HUD.laneIntro('<span class="ln">RAIA ' + (lane + 1) + '</span> <span class="cc">' + s.country + '</span> ' + s.name + (s.isPlayer ? ' <em>(você)</em>' : ''));
+        SG.HUD.laneIntro('<span class="ln">' + SG.t('lane', lane + 1) + '</span> <span class="cc">' + s.country + '</span> ' + s.name + (s.isPlayer ? ' <em>' + SG.t('youTag') + '</em>' : ''));
       }
       if (t >= 1) { SG.HUD.laneIntro(null); r.beginMarks(); }
       return;
@@ -289,7 +289,7 @@
       var x = top[i];
       if (!x) return '';
       return '<div class="pc p' + (i + 1) + (x.isPlayer ? ' me' : '') + '" style="animation-delay:' + SG.PODIUM_MEDAL_TIMES[i] + 's">' +
-        '<div class="pm">' + medals[i] + '</div><div class="pn">' + x.name + (x.isPlayer && x.name !== 'Você' ? ' <em>(você)</em>' : '') + '</div>' +
+        '<div class="pm">' + medals[i] + '</div><div class="pn">' + x.name + (x.isPlayer && !SG.isDefaultName(x.name) ? ' <em>' + SG.t('youTag') + '</em>' : '') + '</div>' +
         '<div class="pt"><span class="cc">' + x.country + '</span> ' + SG.fmtTime(x.time) + '</div></div>';
     }).join('');
     $('podium-cards').innerHTML = html;
@@ -315,26 +315,27 @@
     var newPB = false;
     if (!p.dq && p.finished && (!pbs[key] || p.finishTime < pbs[key])) { newPB = true; pbs[key] = p.finishTime; save('pb', pbs); }
     var medal = me.place === 1 ? '🥇' : me.place === 2 ? '🥈' : me.place === 3 ? '🥉' : '🏊';
-    var title = p.dq ? 'Desclassificado' : (me.place === 1 ? 'Campeão!' : me.place <= 3 ? 'No pódio!' : SG.ordinal(me.place) + ' lugar');
+    var title = p.dq ? SG.t('res.dq') : (me.place === 1 ? SG.t('res.champion') : me.place <= 3 ? SG.t('res.podium') : SG.t('res.place', SG.ordinal(me.place)));
     var evName = res.opts.distance + 'm ' + (res.opts.event === 'medley' ? 'Medley' : SG.STROKES[res.opts.event].name) +
-      ' · piscina ' + res.opts.pool + 'm · ' + SG.DIFFICULTY[res.opts.difficulty].name;
+      ' · ' + SG.t('res.pool', res.opts.pool) + ' · ' + SG.DIFFICULTY[res.opts.difficulty].name;
     var winner = res.list[0];
     var html = '<div class="medal">' + (p.dq ? '🚫' : medal) + '</div>' +
       '<h2>' + title + '</h2><p class="sub">' + evName + '</p>';
     if (!p.dq) {
       html += '<div class="stats">' +
-        '<div><span>Tempo</span><b>' + SG.fmtTime(p.finishTime) + '</b></div>' +
-        '<div><span>Reação</span><b>' + (p.reaction != null ? p.reaction.toFixed(2) + 's' : '-') + '</b></div>' +
-        '<div><span>Recorde pessoal</span><b>' + SG.fmtTime(pbs[key]) + (newPB ? ' <em>NOVO!</em>' : '') + '</b></div>' +
+        '<div><span>' + SG.t('res.time') + '</span><b>' + SG.fmtTime(p.finishTime) + '</b></div>' +
+        '<div><span>' + SG.t('res.reaction') + '</span><b>' + (p.reaction != null ? p.reaction.toFixed(2) + 's' : '-') + '</b></div>' +
+        '<div><span>' + SG.t('res.pb') + '</span><b>' + SG.fmtTime(pbs[key]) + (newPB ? ' <em>' + SG.t('res.new') + '</em>' : '') + '</b></div>' +
         '</div>';
       if (p.splits.length > 1) {
-        html += '<p class="splits">Parciais: ' + p.splits.map(function (t, i) {
+        html += '<p class="splits">' + SG.t('res.splits') + p.splits.map(function (t, i) {
           var prev = i ? p.splits[i - 1] : 0;
           return '<span>' + ((i + 1) * r.L) + 'm ' + SG.fmtTime(t - prev) + '</span>';
         }).join('') + '</p>';
       }
     }
-    html += '<table><thead><tr><th>#</th><th>Raia</th><th>Nadador</th><th>País</th><th>Tempo</th><th>Dif.</th></tr></thead><tbody>';
+    html += '<table><thead><tr><th>#</th><th>' + SG.t('res.lane') + '</th><th>' + SG.t('res.swimmer') + '</th><th>' + SG.t('res.country') +
+      '</th><th>' + SG.t('res.time') + '</th><th>' + SG.t('res.diff') + '</th></tr></thead><tbody>';
     res.list.forEach(function (x) {
       var diff = x.dq ? '' : (x === winner ? '' : '+' + (x.time - winner.time).toFixed(2));
       html += '<tr class="' + (x.isPlayer ? 'me' : '') + '"><td>' + (x.dq ? 'DQ' : x.place) + '</td><td>' + (x.lane + 1) + '</td><td>' + x.name +
@@ -375,7 +376,7 @@
     seg('opt-gfx', o.quality);
     var pbs = load('pb', {});
     var pb = pbs[pbKey(o)];
-    $('menu-pb').textContent = pb ? 'Seu recorde nesta prova: ' + SG.fmtTime(pb) : 'Sem recorde nesta prova ainda';
+    $('menu-pb').textContent = pb ? SG.t('menu.pb', SG.fmtTime(pb)) : SG.t('menu.noPb');
   }
 
   function bindSeg(id, prop) {
@@ -406,6 +407,7 @@
   function init() {
     var saved = load('opts', null);
     if (saved) for (var k in saved) if (k in G.opts) G.opts[k] = saved[k];
+    if (SG.isDefaultName(G.opts.name)) G.opts.name = SG.t('you');
     if (!SG.STROKES[G.opts.event] && G.opts.event !== 'medley') G.opts.event = 'free';
     SG.HUD.init();
     SG.Input.init(onAction);
@@ -421,7 +423,7 @@
     bindSeg('opt-diff', 'difficulty');
     bindSeg('opt-gfx', 'quality');
     $('opt-name').value = G.opts.name;
-    $('opt-name').addEventListener('input', function () { G.opts.name = this.value.trim().slice(0, 14) || 'Você'; save('opts', G.opts); });
+    $('opt-name').addEventListener('input', function () { G.opts.name = this.value.trim().slice(0, 14) || SG.t('you'); save('opts', G.opts); });
     refreshMenu();
 
     $('btn-start').addEventListener('click', function () {
@@ -483,12 +485,12 @@
   }
 
   window.addEventListener('load', function () {
-    if (!window.THREE) { $('loading').textContent = 'Erro ao carregar Three.js'; return; }
+    if (!window.THREE) { $('loading').textContent = SG.t('err.three'); return; }
     try {
       init();
       requestAnimationFrame(menuTick);
     } catch (e) {
-      $('loading').textContent = 'Erro: ' + e.message;
+      $('loading').textContent = SG.t('err.generic', e.message);
       $('loading').classList.remove('hidden');
       throw e;
     }
