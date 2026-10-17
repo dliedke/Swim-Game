@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#0b3d91"/>
+  <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round">
+    <!-- arm reaching forward -->
+    <path d="M17 33 Q24 17 40 20" stroke-width="5"/>
+    <!-- body and legs -->
+    <path d="M20 35 L44 31 L53 35" stroke-width="5"/>
+  </g>
+  <!-- head -->
+  <circle cx="14" cy="27" r="5.5" fill="#ffd23f"/>
+  <!-- waves -->
+  <g fill="none" stroke="#38d4ff" stroke-width="3.5" stroke-linecap="round">
+    <path d="M7 44 q5 -4 10 0 t10 0 t10 0 t10 0 t10 0"/>
+    <path d="M7 52 q5 -4 10 0 t10 0 t10 0 t10 0 t10 0"/>
+  </g>
+</svg>
